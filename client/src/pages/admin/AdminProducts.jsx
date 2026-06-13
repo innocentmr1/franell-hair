@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { getProducts, adminDeleteProduct } from '../../services/api';
+import { resolveImg } from '../../assets/images';
 import toast from 'react-hot-toast';
 
 const HAIR_IMG = {
@@ -17,7 +18,8 @@ const HAIR_IMG = {
 
 function resolveThumb(p) {
   const raw = p.images?.[0];
-  if (raw && !raw.includes('placehold.co')) return raw;
+  const resolved = raw ? resolveImg(raw) : null;
+  if (resolved && !resolved.includes('placehold.co')) return resolved;
   return HAIR_IMG[p.hairType] || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=80&h=80&fit=crop&q=70';
 }
 
