@@ -1,25 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Truck, RotateCcw, Shield, CreditCard } from 'lucide-react';
-import { getFeaturedProducts, getTopReviews, getBestseller, getHeroSlides } from '../services/api';
+import { getFeaturedProducts, getTopReviews, getBestseller, getHeroSlides, getCategories, getPerks } from '../services/api';
 import ProductCard from '../components/ui/ProductCard';
 import HeroSlider from '../components/ui/HeroSlider';
-import { LOCAL_IMAGES, resolveImg } from '../assets/images';
+import { resolveImg } from '../assets/images';
 
 const GOLD = '#C9A84C';
 
-const categories = [
-  { name: 'Locs',         desc: 'Faux, butterfly & soft locs',    img: LOCAL_IMAGES[0] },
-  { name: 'Braiding Hair',desc: 'Box braids & knotless',           img: LOCAL_IMAGES[1] },
-  { name: 'Twists',       desc: 'Senegalese & passion twists',     img: LOCAL_IMAGES[2] },
-  { name: 'Crochet Hair', desc: 'Pre-twisted, ready to install',   img: LOCAL_IMAGES[3] },
-];
+const ICON_MAP = { Truck, RotateCcw, Shield, CreditCard };
 
-const perks = [
-  { icon: Truck,      title: 'Free Shipping',     desc: 'On orders over $150' },
-  { icon: RotateCcw,  title: '30-Day Returns',    desc: 'Hassle-free returns' },
-  { icon: Shield,     title: '100% Human Hair',   desc: 'Certified & authentic' },
-  { icon: CreditCard, title: 'Buy Now Pay Later', desc: 'Flexible payments' },
+const DEFAULT_PERKS = [
+  { icon: 'Truck',      title: 'Free Shipping',   desc: 'On orders over $250' },
+  { icon: 'RotateCcw',  title: '30-Day Returns',  desc: 'Hassle-free returns' },
+  { icon: 'Shield',     title: '100% Human Hair', desc: 'Certified & authentic' },
+  { icon: 'CreditCard', title: 'Secure Payment',  desc: 'Flexible payments' },
 ];
 
 const hairTypes = ['Braids', 'Locs', 'Twists', 'Straight', 'Wavy', 'Curly', 'Kinky'];
@@ -32,6 +27,8 @@ export default function HomePage() {
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [bestseller, setBestseller] = useState(null);
   const [heroSlides, setHeroSlides] = useState([]);
+  const [perks, setPerks] = useState(DEFAULT_PERKS);
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     getFeaturedProducts()
@@ -47,6 +44,12 @@ export default function HomePage() {
       .catch(() => {});
     getHeroSlides()
       .then(({ data }) => setHeroSlides(data))
+      .catch(() => {});
+    getPerks()
+      .then(({ data }) => setPerks(data))
+      .catch(() => {});
+    getCategories()
+      .then(({ data }) => setCategories(data))
       .catch(() => {});
   }, []);
 
@@ -148,49 +151,66 @@ export default function HomePage() {
       {/* ── PERKS ── */}
       <div className="perks-strip">
         <div className="perks-inner">
-          {perks.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="perk-item">
-              <div className="perk-icon"><Icon size={16} /></div>
-              <div>
-                <p className="perk-title">{title}</p>
-                <p className="perk-desc">{desc}</p>
+          {perks.map(({ icon, title, desc }) => {
+            const Icon = ICON_MAP[icon] || Truck;
+            return (
+              <div key={title} className="perk-item">
+                <div className="perk-icon"><Icon size={16} /></div>
+                <div>
+                  <p className="perk-title">{title}</p>
+                  <p className="perk-desc">{desc}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* ── CATEGORIES ── */}
-      <section className="section">
-        <div className="section-inner">
-          <div className="section-header">
-            <div>
-              <span className="eyebrow">Categories</span>
-              <h2 className="section-title">Shop by Style</h2>
-            </div>
-            <Link to="/shop" className="section-view-all">
-              All Products <ArrowRight size={14} />
-            </Link>
-          </div>
-
-          <div className="categories-grid">
-            {categories.map(({ name, desc, img }) => (
-              <Link key={name} to={`/shop?category=${name}`} className="cat-card">
-                <img src={img} alt={name} className="cat-card-img"
-                  onError={(e) => { e.target.src = `https://placehold.co/400x500/111/C9A84C?text=${name}`; }} />
-                <div className="cat-card-overlay" />
-                <div className="cat-card-content">
-                  <p className="cat-card-desc">{desc}</p>
-                  <p className="cat-card-name">{name}</p>
-                  <span className="cat-card-cta">
-                    Shop now <ArrowRight size={11} />
-                  </span>
-                </div>
+      {categories.length > 0 && (
+        <section className="section">
+          <div className="section-inner">
+            <div className="section-header">
+              <div>
+                <span className="eyebrow">Categories</span>
+                <h2 className="section-title">Shop by Style</h2>
+              </div>
+              <Link to="/shop" className="section-view-all">
+                All Products <ArrowRight size={14} />
               </Link>
-            ))}
+            </div>
+
+            <div className="categories-grid">
+              {categories.map((cat) => (
+                <Link
+                  key={cat._id}
+                  to={`/shop?category=${encodeURIComponent(cat.slug || cat.name)}`}
+                  className="cat-card"
+                >
+                  {cat.image ? (
+                    <img
+                      src={cat.image}
+                      alt={cat.name}
+                      className="cat-card-img"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <div className="cat-card-img cat-card-img-fallback" />
+                  )}
+                  <div className="cat-card-overlay" />
+                  <div className="cat-card-content">
+                    {cat.description && <p className="cat-card-desc">{cat.description}</p>}
+                    <p className="cat-card-name">{cat.name}</p>
+                    <span className="cat-card-cta">
+                      Shop now <ArrowRight size={11} />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── FEATURED PRODUCTS ── */}
       <section className="section section-dark">

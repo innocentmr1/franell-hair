@@ -7,12 +7,14 @@ import toast from 'react-hot-toast';
 export default function AdminCategories() {
   const [cats, setCats]         = useState([]);
   const [loading, setLoading]   = useState(true);
-  const [newName, setNewName]   = useState('');
-  const [newDesc, setNewDesc]   = useState('');
-  const [adding, setAdding]     = useState(false);
-  const [editId, setEditId]     = useState(null);
-  const [editName, setEditName] = useState('');
-  const [editDesc, setEditDesc] = useState('');
+  const [newName, setNewName]     = useState('');
+  const [newDesc, setNewDesc]     = useState('');
+  const [newImage, setNewImage]   = useState('');
+  const [adding, setAdding]       = useState(false);
+  const [editId, setEditId]       = useState(null);
+  const [editName, setEditName]   = useState('');
+  const [editDesc, setEditDesc]   = useState('');
+  const [editImage, setEditImage] = useState('');
 
   const load = () => {
     setLoading(true);
@@ -29,9 +31,9 @@ export default function AdminCategories() {
     if (!newName.trim()) return;
     setAdding(true);
     try {
-      await adminCreateCategory({ name: newName.trim(), description: newDesc.trim() });
+      await adminCreateCategory({ name: newName.trim(), description: newDesc.trim(), image: newImage.trim() });
       toast.success(`"${newName}" added`);
-      setNewName(''); setNewDesc('');
+      setNewName(''); setNewDesc(''); setNewImage('');
       load();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to add category');
@@ -44,14 +46,15 @@ export default function AdminCategories() {
     setEditId(cat._id);
     setEditName(cat.name);
     setEditDesc(cat.description || '');
+    setEditImage(cat.image || '');
   };
 
-  const cancelEdit = () => { setEditId(null); setEditName(''); setEditDesc(''); };
+  const cancelEdit = () => { setEditId(null); setEditName(''); setEditDesc(''); setEditImage(''); };
 
   const handleEdit = async (id) => {
     if (!editName.trim()) return;
     try {
-      await adminUpdateCategory(id, { name: editName.trim(), description: editDesc.trim() });
+      await adminUpdateCategory(id, { name: editName.trim(), description: editDesc.trim(), image: editImage.trim() });
       toast.success('Category updated');
       cancelEdit();
       load();
@@ -99,6 +102,14 @@ export default function AdminCategories() {
               style={{ width: '100%' }}
             />
           </div>
+          <div style={{ flex: '2', minWidth: '200px' }}>
+            <label className="admin-form-label" style={{ marginBottom: '.25rem', display: 'block' }}>Image URL (optional)</label>
+            <input
+              value={newImage} onChange={(e) => setNewImage(e.target.value)}
+              className="admin-form-input" placeholder="https://... (shown on homepage)"
+              style={{ width: '100%' }}
+            />
+          </div>
           <button type="submit" disabled={adding || !newName.trim()} className="admin-submit-btn"
             style={{ height: '38px', padding: '0 1.25rem', whiteSpace: 'nowrap' }}>
             <Plus size={14} style={{ display: 'inline', marginRight: '.3rem' }} />
@@ -116,6 +127,7 @@ export default function AdminCategories() {
                 <th>#</th>
                 <th>Category Name</th>
                 <th>Description</th>
+                <th>Image</th>
                 <th>Slug</th>
                 <th>Created</th>
                 <th>Actions</th>
@@ -149,6 +161,20 @@ export default function AdminCategories() {
                       />
                     ) : (
                       <span style={{ color: '#777', fontSize: '.8125rem' }}>{cat.description || '—'}</span>
+                    )}
+                  </td>
+                  <td>
+                    {editId === cat._id ? (
+                      <input
+                        value={editImage} onChange={(e) => setEditImage(e.target.value)}
+                        className="admin-form-input" style={{ minWidth: '180px' }}
+                        placeholder="Image URL"
+                      />
+                    ) : cat.image ? (
+                      <img src={cat.image} alt={cat.name} style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 6 }}
+                        onError={(e) => { e.target.style.display = 'none'; }} />
+                    ) : (
+                      <span style={{ color: '#ccc', fontSize: '.75rem' }}>—</span>
                     )}
                   </td>
                   <td style={{ color: '#9ca3af', fontFamily: 'monospace', fontSize: '.75rem' }}>{cat.slug}</td>
