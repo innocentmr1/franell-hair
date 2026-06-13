@@ -26,7 +26,12 @@ export default function HeroSlider({ slides = [] }) {
 
   const resolveUrl = (url) => {
     if (!url) return FALLBACK;
-    if (url.startsWith('/uploads/')) return `http://localhost:5000${url}`;
+    if (url.startsWith('http://localhost')) return FALLBACK; // stale local URL → use fallback
+    if (url.startsWith('/uploads/')) {
+      const raw = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+      const base = raw.endsWith('/api') ? raw.slice(0, -4) : raw;
+      return base ? `${base}${url}` : url;
+    }
     return url;
   };
 
