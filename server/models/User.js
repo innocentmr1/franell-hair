@@ -7,12 +7,17 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true },
     password: { type: String, required: true, minlength: 6 },
     isAdmin: { type: Boolean, default: false },
+    phone: { type: String, default: '' },
     shippingAddress: {
-      street: String,
-      city: String,
-      state: String,
-      zip: String,
-      country: String,
+      street:  { type: String, default: '' },
+      city:    { type: String, default: '' },
+      state:   { type: String, default: '' },
+      zip:     { type: String, default: '' },
+      country: { type: String, default: '' },
+    },
+    preferences: {
+      newsletter:   { type: Boolean, default: false },
+      orderUpdates: { type: Boolean, default: true },
     },
   },
   { timestamps: true }

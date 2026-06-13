@@ -10,13 +10,7 @@ const register = async (req, res) => {
     return res.status(400).json({ message: 'Email already registered' });
 
   const user = await User.create({ name, email, password });
-  res.status(201).json({
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    isAdmin: user.isAdmin,
-    token: generateToken(user._id),
-  });
+  res.status(201).json(formatUser(user));
 };
 
 const login = async (req, res) => {
@@ -25,31 +19,34 @@ const login = async (req, res) => {
   if (!user || !(await user.matchPassword(password)))
     return res.status(401).json({ message: 'Invalid email or password' });
 
-  res.json({
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    isAdmin: user.isAdmin,
-    token: generateToken(user._id),
-  });
+  res.json(formatUser(user));
 };
 
 const getProfile = async (req, res) => {
-  res.json(req.user);
+  res.json(formatUser(req.user));
 };
 
 const updateProfile = async (req, res) => {
   const user = await User.findById(req.user._id);
-  user.name = req.body.name || user.name;
+  user.name  = req.body.name  || user.name;
   user.email = req.body.email || user.email;
-  if (req.body.password) user.password = req.body.password;
-  if (req.body.shippingAddress) user.shippingAddress = req.body.shippingAddress;
+  if (req.body.phone !== undefined)           user.phone           = req.body.phone;
+  if (req.body.password)                      user.password        = req.body.password;
+  if (req.body.shippingAddress)               user.shippingAddress = req.body.shippingAddress;
+  if (req.body.preferences !== undefined)     user.preferences     = req.body.preferences;
   const updated = await user.save();
-  res.json({
-    _id: updated._id, name: updated.name, email: updated.email,
-    isAdmin: updated.isAdmin, shippingAddress: updated.shippingAddress,
-    token: generateToken(updated._id),
-  });
+  res.json(formatUser(updated));
 };
+
+function formatUser(u) {
+  return {
+    _id: u._id, name: u.name, email: u.email,
+    isAdmin: u.isAdmin, phone: u.phone || '',
+    shippingAddress: u.shippingAddress || {},
+    preferences: u.preferences || { newsletter: false, orderUpdates: true },
+    createdAt: u.createdAt,
+    token: generateToken(u._id),
+  };
+}
 
 module.exports = { register, login, getProfile, updateProfile };
