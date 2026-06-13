@@ -1,0 +1,10 @@
+{
+  "name": "franell-hair",
+  "version": "1.0.0",
+  "scripts": {
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "seed": "cd server && node seed.js",
+    "install:all": "cd client && npm install && cd ../server && npm install"
+  }
+}
