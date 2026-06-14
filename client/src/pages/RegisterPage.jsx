@@ -85,7 +85,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="auth-stats-grid">
-            {[['2,400+', 'Customers'], ['4.9★', 'Rating'], ['30-day', 'Returns']].map(([val, label]) => (
+            {[['1,000+', 'Customers'], ['5.0★', 'Rating'], ['30-day', 'Returns']].map(([val, label]) => (
               <div key={label}>
                 <p className="auth-stat-value">{val}</p>
                 <p className="auth-stat-label">{label}</p>

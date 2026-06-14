@@ -117,4 +117,20 @@ const getTopReviews = async (req, res) => {
   res.json(all.slice(0, 6));
 };
 
-module.exports = { getProducts, getFeaturedProducts, getProduct, createProduct, updateProduct, deleteProduct, addReview, getTopReviews, getBestseller };
+const getSiteStats = async (req, res) => {
+  try {
+    const result = await Product.aggregate([
+      { $match: { numReviews: { $gt: 0 } } },
+      { $group: { _id: null, totalReviews: { $sum: '$numReviews' }, avgRating: { $avg: '$rating' } } },
+    ]);
+    const s = result[0];
+    res.json({
+      avgRating:    s ? parseFloat(s.avgRating.toFixed(1)) : null,
+      totalReviews: s ? s.totalReviews : 0,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { getProducts, getFeaturedProducts, getProduct, createProduct, updateProduct, deleteProduct, addReview, getTopReviews, getBestseller, getSiteStats };

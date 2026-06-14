@@ -53,6 +53,15 @@ export const adminDeleteCategory   = (id)            => api.delete(`/categories/
 export const getAnnouncement       = ()              => api.get('/settings/announcement');
 export const updateAnnouncement    = (value)         => api.put('/settings/announcement', { value });
 
+// Settings / Perks & Pill
+export const getPerks              = ()              => api.get('/settings/perks');
+export const updatePerks           = (perks)         => api.put('/settings/perks', { perks });
+export const getHeroPill           = ()              => api.get('/settings/hero-pill');
+export const updateHeroPill        = (d)             => api.put('/settings/hero-pill', d);
+
+// Site Stats
+export const getSiteStats          = ()              => api.get('/products/stats');
+
 // Hero Slides
 export const getHeroSlides         = ()              => api.get('/hero-slides');
 export const addHeroSlide          = (imageUrl)      => api.post('/hero-slides', { imageUrl });

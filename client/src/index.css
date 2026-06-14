@@ -417,10 +417,15 @@ input, textarea, select { font-family: inherit; }
 .product-price-compare { font-size: .75rem; color: var(--text-muted); text-decoration: line-through; }
 
 /* ─── 10. HOME PAGE ─────────────────────────────────── */
-.hero { background: var(--black); overflow: hidden; }
+.hero { background: var(--black); overflow: hidden; position: relative; min-height: 92vh; display: flex; align-items: center; }
+.hero-bg-overlay {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(105deg, rgba(0,0,0,.82) 0%, rgba(0,0,0,.58) 55%, rgba(0,0,0,.25) 100%);
+}
 .hero-inner {
   max-width: var(--container-max); margin: 0 auto; padding: 4rem var(--container-pad);
   display: grid; grid-template-columns: 1fr; gap: 3rem; align-items: center;
+  position: relative; z-index: 2; width: 100%;
 }
 .hero-badge {
   display: inline-flex; align-items: center; gap: .5rem;
@@ -443,7 +448,7 @@ input, textarea, select { font-family: inherit; }
 .hero-rating-score { font-size: .875rem; font-weight: 700; color: var(--white); margin-left: 6px; }
 .hero-rating-sub { font-size: .75rem; color: #6b7280; }
 
-.hero-right { position: relative; }
+.hero-right { position: relative; display: none; }
 .hero-image-wrap {
   aspect-ratio: 3/4; border-radius: 1.5rem; overflow: hidden;
   background: #1a1a1a; border: 1px solid rgba(255,255,255,.05); box-shadow: var(--shadow-lg); position: relative;
@@ -452,7 +457,7 @@ input, textarea, select { font-family: inherit; }
 .hero-img-gradient { position: absolute; inset: 0; background: linear-gradient(to top, rgba(17,17,17,.6) 0%, transparent 50%); }
 
 /* ─── Hero Slider ─────────────────────────────────── */
-.hero-slider { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; }
+.hero-slider { position: absolute; inset: 0; overflow: hidden; z-index: 0; }
 .hero-slide {
   position: absolute; inset: 0;
   background-size: cover; background-position: center;
@@ -1043,6 +1048,7 @@ input, textarea, select { font-family: inherit; }
 
   .hero-inner     { grid-template-columns: 1fr 1fr; gap: 4rem; padding: 7rem var(--container-pad); }
   .hero-title     { font-size: 4rem; }
+  .hero-right     { display: block; }
   .grid-products  { grid-template-columns: repeat(4,1fr); }
 }
 

@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="footer-cta-inner">
           <div>
             <p className="footer-cta-title">Ready for your best hair day?</p>
-            <p className="footer-cta-sub">Join 2,400+ women who trust Franell Hair.</p>
+            <p className="footer-cta-sub">Join over 1,000 women who trust Franell Hair.</p>
           </div>
           <Link to="/shop" className="footer-cta-btn">Shop Now</Link>
         </div>
@@ -52,7 +52,7 @@ export default function Footer() {
         <div>
           <h4 className="footer-col-title">Contact</h4>
           <div className="footer-contacts">
-            <p className="footer-contact-item">support@franellhair.com</p>
+            <p className="footer-contact-item">info@franellhair.com</p>
             <p className="footer-contact-item">Mon–Fri · 9am–6pm EST</p>
           </div>
           <div className="footer-shipping-box">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Truck, RotateCcw, Shield, CreditCard } from 'lucide-react';
-import { getFeaturedProducts, getTopReviews, getBestseller, getHeroSlides, getCategories, getPerks } from '../services/api';
+import { getFeaturedProducts, getTopReviews, getBestseller, getHeroSlides, getCategories, getPerks, getHeroPill, getSiteStats } from '../services/api';
 import ProductCard from '../components/ui/ProductCard';
 import HeroSlider from '../components/ui/HeroSlider';
 import { resolveImg } from '../assets/images';
@@ -29,6 +29,8 @@ export default function HomePage() {
   const [heroSlides, setHeroSlides] = useState([]);
   const [perks, setPerks] = useState(DEFAULT_PERKS);
   const [categories, setCategories] = useState([]);
+  const [heroPill, setHeroPill] = useState({ label: 'Free Ship', amount: '$150+' });
+  const [siteStats, setSiteStats] = useState({ avgRating: null, totalReviews: 0 });
 
   useEffect(() => {
     getFeaturedProducts()
@@ -51,6 +53,12 @@ export default function HomePage() {
     getCategories()
       .then(({ data }) => setCategories(data))
       .catch(() => {});
+    getHeroPill()
+      .then(({ data }) => setHeroPill(data))
+      .catch(() => {});
+    getSiteStats()
+      .then(({ data }) => setSiteStats(data))
+      .catch(() => {});
   }, []);
 
   return (
@@ -58,6 +66,10 @@ export default function HomePage() {
 
       {/* ── HERO ── */}
       <section className="hero">
+        {/* Full-section background slider */}
+        <HeroSlider slides={heroSlides} />
+        <div className="hero-bg-overlay" />
+
         <div className="hero-inner">
 
           {/* Left */}
@@ -97,19 +109,21 @@ export default function HomePage() {
                   {[1,2,3,4,5].map((i) => (
                     <Star key={i} size={12} style={{ fill: GOLD, color: GOLD }} />
                   ))}
-                  <span className="hero-rating-score">4.9</span>
+                  <span className="hero-rating-score">
+                    {siteStats.avgRating ?? '5.0'}
+                  </span>
                 </div>
-                <p className="hero-rating-sub">2,400+ happy customers</p>
+                <p className="hero-rating-sub">
+                  {siteStats.totalReviews > 0
+                    ? `${siteStats.totalReviews.toLocaleString()}+ happy customers`
+                    : '1,000+ happy customers'}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Right */}
+          {/* Right — floating badges, desktop only */}
           <div className="hero-right">
-            <div className="hero-image-wrap">
-              <HeroSlider slides={heroSlides} />
-            </div>
-
             {bestseller && (() => {
               const bsImg = resolveImg(bestseller.images?.[0])
                 || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=300&h=380&fit=crop&q=80';
@@ -141,8 +155,8 @@ export default function HomePage() {
             })()}
 
             <div className="hero-ship-pill">
-              <p className="hero-ship-label">Free Ship</p>
-              <p className="hero-ship-amount">$150+</p>
+              <p className="hero-ship-label">{heroPill.label}</p>
+              <p className="hero-ship-amount">{heroPill.amount}</p>
             </div>
           </div>
         </div>

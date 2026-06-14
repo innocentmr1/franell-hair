@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Save, Megaphone, Image } from 'lucide-react';
-import { getAnnouncement, updateAnnouncement } from '../../services/api';
+import { ArrowLeft, Save, Megaphone, Image, Tag } from 'lucide-react';
+import { getAnnouncement, updateAnnouncement, getHeroPill, updateHeroPill } from '../../services/api';
 import toast from 'react-hot-toast';
 
 export default function AdminSettings() {
@@ -9,11 +9,17 @@ export default function AdminSettings() {
   const [saving, setSaving]   = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const [pill, setPill]           = useState({ label: 'Free Ship', amount: '$150+' });
+  const [pillSaving, setPillSaving] = useState(false);
+
   useEffect(() => {
     getAnnouncement()
       .then(({ data }) => setText(data.value || ''))
       .catch(() => {})
       .finally(() => setLoading(false));
+    getHeroPill()
+      .then(({ data }) => setPill(data))
+      .catch(() => {});
   }, []);
 
   const handleSave = async (e) => {
@@ -30,6 +36,19 @@ export default function AdminSettings() {
     }
   };
 
+  const handlePillSave = async (e) => {
+    e.preventDefault();
+    setPillSaving(true);
+    try {
+      await updateHeroPill(pill);
+      toast.success('Hero pill updated!');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save');
+    } finally {
+      setPillSaving(false);
+    }
+  };
+
   return (
     <div className="admin-page">
       <div className="admin-page-header">
@@ -42,6 +61,46 @@ export default function AdminSettings() {
       </div>
 
       <div className="settings-wrap" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {/* Hero Ship Pill */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <div className="settings-card-icon"><Tag size={18} /></div>
+            <div>
+              <h2 className="settings-card-title">Hero Shipping Pill</h2>
+              <p className="settings-card-sub">The gold badge on the hero section showing your shipping offer.</p>
+            </div>
+          </div>
+          <form onSubmit={handlePillSave} className="settings-form">
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: '140px' }}>
+                <label className="admin-form-label" style={{ display: 'block', marginBottom: '.25rem' }}>Label</label>
+                <input
+                  className="admin-form-input" style={{ width: '100%' }}
+                  value={pill.label}
+                  onChange={e => setPill(p => ({ ...p, label: e.target.value }))}
+                  placeholder="e.g. Free Ship"
+                />
+              </div>
+              <div style={{ flex: 1, minWidth: '140px' }}>
+                <label className="admin-form-label" style={{ display: 'block', marginBottom: '.25rem' }}>Amount / Sub-line</label>
+                <input
+                  className="admin-form-input" style={{ width: '100%' }}
+                  value={pill.amount}
+                  onChange={e => setPill(p => ({ ...p, amount: e.target.value }))}
+                  placeholder="e.g. $150+"
+                />
+              </div>
+            </div>
+            <p className="settings-hint" style={{ marginTop: '.5rem' }}>
+              Preview: <strong>{pill.label || 'Free Ship'}</strong> / <strong>{pill.amount || '$150+'}</strong>
+            </p>
+            <button type="submit" disabled={pillSaving} className="settings-save-btn">
+              <Save size={14} />
+              {pillSaving ? 'Saving…' : 'Save Pill'}
+            </button>
+          </form>
+        </div>
+
         {/* Hero Slides shortcut */}
         <div className="settings-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
           <div className="settings-card-header" style={{ marginBottom: 0, borderBottom: 'none', paddingBottom: 0 }}>

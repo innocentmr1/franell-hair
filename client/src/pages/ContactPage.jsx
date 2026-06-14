@@ -29,7 +29,7 @@ export default function ContactPage() {
         {/* Info cards */}
         <div className="contact-info-grid">
           {[
-            { icon: Mail,   label: 'Email Us',       value: 'support@franellhair.com' },
+            { icon: Mail,   label: 'Email Us',       value: 'info@franellhair.com' },
             { icon: Phone,  label: 'Call Us',         value: '+1 (555) 123-4567' },
             { icon: MapPin, label: 'Location',        value: 'Atlanta, GA, USA' },
             { icon: Clock,  label: 'Business Hours',  value: 'Mon–Sat 9am – 6pm EST' },
