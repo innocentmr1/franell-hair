@@ -45,6 +45,7 @@ export const adminDeleteUser        = (id)            => api.delete(`/admin/user
 
 // Categories
 export const getCategories         = ()              => api.get('/categories');
+export const uploadCategoryImage   = (formData)      => api.post('/categories/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const adminCreateCategory   = (data)          => api.post('/categories', data);
 export const adminUpdateCategory   = (id, data)      => api.put(`/categories/${id}`, data);
 export const adminDeleteCategory   = (id)            => api.delete(`/categories/${id}`);

@@ -1,10 +1,17 @@
 import { useEffect, useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const FALLBACK = 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=900&h=1100&fit=crop&q=80';
+const FALLBACKS = [
+  'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1600&h=900&fit=crop&q=85',
+  'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=1600&h=900&fit=crop&q=85',
+  'https://images.unsplash.com/photo-1515688594390-b649af70d282?w=1600&h=900&fit=crop&q=85',
+  'https://images.unsplash.com/photo-1519699047748-de8e44f90ae4?w=1600&h=900&fit=crop&q=85',
+];
 
 export default function HeroSlider({ slides = [] }) {
-  const images  = slides.length ? slides.map((s) => s.imageUrl) : [FALLBACK];
+  const raw    = slides.length ? slides.map((s) => s.imageUrl) : FALLBACKS;
+  const images = raw.map(resolveUrl);
+
   const [idx, setIdx]   = useState(0);
   const [fade, setFade] = useState(true);
   const timer = useRef(null);
@@ -24,16 +31,16 @@ export default function HeroSlider({ slides = [] }) {
 
   useEffect(() => { startTimer(); return () => clearInterval(timer.current); }, [idx, images.length]);
 
-  const resolveUrl = (url) => {
-    if (!url) return FALLBACK;
-    if (url.startsWith('http://localhost')) return FALLBACK; // stale local URL → use fallback
+  function resolveUrl(url) {
+    if (!url) return FALLBACKS[0];
+    if (url.startsWith('http://localhost')) return FALLBACKS[0];
     if (url.startsWith('/uploads/')) {
       const raw = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
       const base = raw.endsWith('/api') ? raw.slice(0, -4) : raw;
       return base ? `${base}${url}` : url;
     }
     return url;
-  };
+  }
 
   return (
     <div className="hero-slider">
@@ -41,7 +48,7 @@ export default function HeroSlider({ slides = [] }) {
         <div
           key={i}
           className={`hero-slide ${i === idx ? (fade ? 'active' : 'exit') : ''}`}
-          style={{ backgroundImage: `url(${resolveUrl(img)})` }}
+          style={{ backgroundImage: `url(${img})` }}
         />
       ))}
 
