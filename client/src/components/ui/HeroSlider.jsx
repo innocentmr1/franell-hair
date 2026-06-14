@@ -2,10 +2,10 @@ import { useEffect, useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const FALLBACKS = [
-  'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1600&h=900&fit=crop&q=85',
-  'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=1600&h=900&fit=crop&q=85',
-  'https://images.unsplash.com/photo-1515688594390-b649af70d282?w=1600&h=900&fit=crop&q=85',
-  'https://images.unsplash.com/photo-1519699047748-de8e44f90ae4?w=1600&h=900&fit=crop&q=85',
+  'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1920&h=1080&fit=crop&crop=faces,center&q=90&auto=format',
+  'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=1920&h=1080&fit=crop&crop=faces,center&q=90&auto=format',
+  'https://images.unsplash.com/photo-1519699047748-de8e44f90ae4?w=1920&h=1080&fit=crop&crop=faces,center&q=90&auto=format',
+  'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1920&h=1080&fit=crop&crop=faces,center&q=90&auto=format',
 ];
 
 export default function HeroSlider({ slides = [] }) {
