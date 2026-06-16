@@ -252,11 +252,6 @@ export default function ProductDetailPage() {
                   ))}
               </ul>
             )}
-            <div className="product-perks">
-              <p className="product-perk-item">✓ Premium Quality Hair</p>
-              <p className="product-perk-item">✓ Free Shipping on orders over $150</p>
-              <p className="product-perk-item">✓ 30-Day Returns</p>
-            </div>
           </div>
 
           <ProductVideos videos={product.videos} legacy={product.video} />
