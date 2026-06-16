@@ -17,8 +17,7 @@ function toYouTubeEmbed(url) {
   if (!id) return null;
   const p = new URLSearchParams({
     autoplay: '1', mute: '1', loop: '1', playlist: id,
-    controls: '0', rel: '0', modestbranding: '1',
-    iv_load_policy: '3', cc_load_policy: '0', disablekb: '1', fs: '0',
+    controls: '0', rel: '0', modestbranding: '1', iv_load_policy: '3',
   });
   return `https://www.youtube-nocookie.com/embed/${id}?${p}`;
 }

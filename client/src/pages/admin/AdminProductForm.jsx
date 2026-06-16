@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Plus, Trash2, Image as ImageIcon, Video } from 'lucide-react';
+import { Plus, Trash2, Image as ImageIcon, Video, Upload } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
-import { getProduct, adminCreateProduct, adminUpdateProduct, getCategories } from '../../services/api';
+import { getProduct, adminCreateProduct, adminUpdateProduct, getCategories, uploadProductFile } from '../../services/api';
 import { LOCAL_IMAGES } from '../../assets/images';
 import toast from 'react-hot-toast';
 
@@ -16,6 +16,38 @@ const BLANK = {
   lengths: '', colors: '', stock: '',
   isFeatured: false, isNewArrival: false,
 };
+
+/* Upload button — opens a file picker, uploads, calls onUrl with the returned URL */
+function UploadBtn({ accept, onUrl, label = 'Upload' }) {
+  const ref = useRef(null);
+  const [busy, setBusy] = useState(false);
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const { data } = await uploadProductFile(fd);
+      onUrl(data.url);
+    } catch {
+      toast.error('Upload failed');
+    } finally {
+      setBusy(false);
+      e.target.value = '';
+    }
+  };
+
+  return (
+    <>
+      <input ref={ref} type="file" accept={accept} style={{ display: 'none' }} onChange={handleFile} />
+      <button type="button" className="admin-upload-btn" onClick={() => ref.current.click()} disabled={busy}>
+        <Upload size={13} /> {busy ? 'Uploading…' : label}
+      </button>
+    </>
+  );
+}
 
 /* Local photo picker grid */
 function LocalPicker({ selected, onToggle }) {
@@ -217,14 +249,15 @@ export default function AdminProductForm() {
 
             {/* URL inputs */}
             <p className="admin-form-hint" style={{ margin: '.875rem 0 .5rem' }}>
-              Or paste image URLs (first image is the main photo):
+              Paste an image URL, a YouTube link, or upload from your device:
             </p>
             {imageInputs.map((url, i) => (
               <div key={i} className="admin-media-row">
                 <input
                   value={url} onChange={(e) => updateImg(i, e.target.value)}
-                  className="admin-form-input" placeholder={`Image URL ${i + 1} or local:0–8`}
+                  className="admin-form-input" placeholder={`Image URL, YouTube link, or local:0–8`}
                 />
+                <UploadBtn accept="image/*" onUrl={(u) => updateImg(i, u)} />
                 {imageInputs.length > 1 && (
                   <button type="button" onClick={() => removeImg(i)} className="admin-media-remove">
                     <Trash2 size={14} />
@@ -241,14 +274,15 @@ export default function AdminProductForm() {
           <div className="admin-form-group">
             <label className="admin-form-label"><Video size={14} style={{ display:'inline', marginRight:'.3rem' }} />Product Videos</label>
             <p className="admin-form-hint" style={{ marginBottom: '.5rem' }}>
-              Paste a YouTube link (<code>youtube.com/watch?v=…</code> or <code>youtu.be/…</code>) or a direct .mp4 URL. Multiple videos are supported.
+              Paste a YouTube link, upload an MP4 from your phone or laptop (up to 50 MB), or use a direct .mp4 URL.
             </p>
             {videoInputs.map((url, i) => (
               <div key={i} className="admin-media-row">
                 <input
                   value={url} onChange={(e) => updateVid(i, e.target.value)}
-                  className="admin-form-input" placeholder="https://youtube.com/watch?v=...  or  https://…/video.mp4"
+                  className="admin-form-input" placeholder="YouTube link or video URL"
                 />
+                <UploadBtn accept="video/*" onUrl={(u) => updateVid(i, u)} label="Upload Video" />
                 {videoInputs.length > 1 && (
                   <button type="button" onClick={() => removeVid(i)} className="admin-media-remove">
                     <Trash2 size={14} />
