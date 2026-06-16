@@ -751,8 +751,11 @@ input, textarea, select { font-family: inherit; }
 .product-add-btn:disabled { opacity: .5; cursor: not-allowed; }
 
 .product-desc-section { border-top: 1px solid #f3f4f6; padding-top: 1.5rem; }
-.product-desc-title { font-size: .9375rem; font-weight: 600; color: #111827; margin-bottom: .5rem; }
+.product-desc-title { font-size: .9375rem; font-weight: 600; color: #111827; margin-bottom: .75rem; }
 .product-desc-text { font-size: .875rem; color: #6b7280; line-height: 1.7; }
+.product-desc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+.product-desc-item { font-size: .875rem; color: #4b5563; line-height: 1.6; padding-left: 1.25rem; position: relative; }
+.product-desc-item::before { content: '✓'; position: absolute; left: 0; color: #C9A84C; font-weight: 700; }
 .product-perks { margin-top: 1rem; display: flex; flex-direction: column; gap: .25rem; }
 .product-perk-item { font-size: .75rem; color: #9ca3af; }
 

@@ -10,6 +10,8 @@ import toast from 'react-hot-toast';
 function toYouTubeEmbed(url) {
   if (!url) return null;
   if (url.includes('/embed/')) return url.replace('youtube.com/embed/', 'youtube-nocookie.com/embed/');
+  const shorts = url.match(/\/shorts\/([^?&#/]+)/);
+  if (shorts) return `https://www.youtube-nocookie.com/embed/${shorts[1]}`;
   const short = url.match(/youtu\.be\/([^?&#/]+)/);
   if (short) return `https://www.youtube-nocookie.com/embed/${short[1]}`;
   const watch = url.match(/[?&]v=([^&#]+)/);
@@ -232,7 +234,19 @@ export default function ProductDetailPage() {
 
           <div className="product-desc-section">
             <h3 className="product-desc-title">Description</h3>
-            <p className="product-desc-text">{product.description}</p>
+            {product.description && (
+              <ul className="product-desc-list">
+                {product.description
+                  .split('\n')
+                  .map(line => line.trim())
+                  .filter(Boolean)
+                  .map((line, i) => (
+                    <li key={i} className="product-desc-item">
+                      {line.replace(/^[-•*]\s*/, '')}
+                    </li>
+                  ))}
+              </ul>
+            )}
             <div className="product-perks">
               <p className="product-perk-item">✓ Premium Quality Hair</p>
               <p className="product-perk-item">✓ Free Shipping on orders over $150</p>
