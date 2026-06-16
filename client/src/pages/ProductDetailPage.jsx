@@ -9,14 +9,17 @@ import toast from 'react-hot-toast';
 
 function toYouTubeEmbed(url) {
   if (!url) return null;
-  if (url.includes('/embed/')) return url.replace('youtube.com/embed/', 'youtube-nocookie.com/embed/');
-  const shorts = url.match(/\/shorts\/([^?&#/]+)/);
-  if (shorts) return `https://www.youtube-nocookie.com/embed/${shorts[1]}`;
-  const short = url.match(/youtu\.be\/([^?&#/]+)/);
-  if (short) return `https://www.youtube-nocookie.com/embed/${short[1]}`;
-  const watch = url.match(/[?&]v=([^&#]+)/);
-  if (watch) return `https://www.youtube-nocookie.com/embed/${watch[1]}`;
-  return null;
+  let id = null;
+  if (url.includes('/embed/')) { const m = url.match(/\/embed\/([^?&#/]+)/); id = m?.[1]; }
+  else if (url.match(/\/shorts\/([^?&#/]+)/)) id = url.match(/\/shorts\/([^?&#/]+)/)[1];
+  else if (url.match(/youtu\.be\/([^?&#/]+)/))  id = url.match(/youtu\.be\/([^?&#/]+)/)[1];
+  else if (url.match(/[?&]v=([^&#]+)/))         id = url.match(/[?&]v=([^&#]+)/)[1];
+  if (!id) return null;
+  const p = new URLSearchParams({
+    autoplay: '1', mute: '1', loop: '1', playlist: id,
+    controls: '0', rel: '0', modestbranding: '1', iv_load_policy: '3',
+  });
+  return `https://www.youtube-nocookie.com/embed/${id}?${p}`;
 }
 
 function ProductVideos({ videos = [], legacy = '' }) {
@@ -28,11 +31,13 @@ function ProductVideos({ videos = [], legacy = '' }) {
       {all.map((url, i) => {
         const embed = toYouTubeEmbed(url);
         return embed ? (
-          <iframe key={i} src={embed} className="product-video-iframe"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen title={`Product video ${i + 1}`} />
+          <div key={i} className="product-video-clip">
+            <iframe src={embed} className="product-video-iframe"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen title={`Product video ${i + 1}`} />
+          </div>
         ) : (
-          <video key={i} src={url} controls className="product-video-el" />
+          <video key={i} src={url} autoPlay muted loop playsInline controls className="product-video-el" />
         );
       })}
     </div>
