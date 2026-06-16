@@ -128,10 +128,21 @@ export default function ProductDetailPage() {
 
   const fallback = HAIR_IMG[product.hairType] || HAIR_IMG[product.category]
     || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=700&h=800&fit=crop&q=80';
-  const images = (product.images || [])
-    .map(resolveImg)
-    .filter(u => u && !u.includes('placehold.co'));
-  if (!images.length) images.push(fallback);
+
+  // YouTube URLs → embedded video; everything else → image
+  const galleryItems = (product.images || []).filter(Boolean).map(url => {
+    const isYT = url.includes('youtube.com') || url.includes('youtu.be');
+    if (isYT) {
+      const embed = toYouTubeEmbed(url);
+      if (embed) return { type: 'video', embed, thumb: resolveImg(url), isShorts: url.includes('/shorts/') };
+    }
+    const src = resolveImg(url);
+    if (src && !src.includes('placehold.co')) return { type: 'image', src, thumb: src };
+    return null;
+  }).filter(Boolean);
+  if (!galleryItems.length) galleryItems.push({ type: 'image', src: fallback, thumb: fallback });
+
+  const current = galleryItems[imgIdx] || galleryItems[0];
 
   return (
     <div className="product-detail">
@@ -139,25 +150,38 @@ export default function ProductDetailPage() {
 
         {/* Gallery */}
         <div>
-          <div className="gallery-main">
-            <img src={images[imgIdx]} alt={product.name} className="gallery-main-img" />
-            {images.length > 1 && (
+          <div className={`gallery-main${current.type === 'video' && current.isShorts ? ' gallery-main-shorts' : ''}`}>
+            {current.type === 'video' ? (
+              <div className="gallery-video-clip">
+                <iframe
+                  src={current.embed}
+                  className="gallery-video-iframe"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Product video"
+                />
+              </div>
+            ) : (
+              <img src={current.src} alt={product.name} className="gallery-main-img"
+                onError={(e) => { e.target.src = fallback; }} />
+            )}
+            {galleryItems.length > 1 && (
               <>
                 <button className="gallery-nav gallery-nav-prev"
-                  onClick={() => setImgIdx((i) => (i - 1 + images.length) % images.length)}>
+                  onClick={() => setImgIdx((i) => (i - 1 + galleryItems.length) % galleryItems.length)}>
                   <ChevronLeft size={18} />
                 </button>
                 <button className="gallery-nav gallery-nav-next"
-                  onClick={() => setImgIdx((i) => (i + 1) % images.length)}>
+                  onClick={() => setImgIdx((i) => (i + 1) % galleryItems.length)}>
                   <ChevronRight size={18} />
                 </button>
               </>
             )}
           </div>
           <div className="gallery-thumbs">
-            {images.map((img, i) => (
+            {galleryItems.map((item, i) => (
               <button key={i} onClick={() => setImgIdx(i)} className={`gallery-thumb ${i === imgIdx ? 'active' : ''}`}>
-                <img src={img} alt="" />
+                <img src={item.thumb} alt="" />
               </button>
             ))}
           </div>
