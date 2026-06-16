@@ -790,7 +790,7 @@ input, textarea, select { font-family: inherit; }
 .product-video-wrap   { margin-top: 1.75rem; padding-top: 1.75rem; border-top: 1px solid #f3f4f6; }
 .product-video-title  { font-size: .875rem; font-weight: 700; color: #111; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .875rem; }
 .product-video-clip   { position: relative; width: 100%; aspect-ratio: 16/9; border-radius: var(--radius); overflow: hidden; background: #000; }
-.product-video-iframe { position: absolute; top: -3%; left: -3%; width: 106%; height: 106%; border: none; display: block; }
+.product-video-iframe { position: absolute; top: -12%; left: -3%; width: 106%; height: 124%; border: none; display: block; }
 .product-video-el     { width: 100%; border-radius: var(--radius); max-height: 400px; object-fit: cover; display: block; }
 
 /* ─── 14. CART PAGE ─────────────────────────────────── */
