@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Star, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getProduct, addReview } from '../services/api';
+import { Star, ShoppingCart, ChevronLeft, ChevronRight, X, ZoomIn, Ruler } from 'lucide-react';
+import { getProduct, addReview, getRelatedProducts, notifyWhenInStock } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { resolveImg } from '../assets/images';
+import ProductCard from '../components/ui/ProductCard';
 import toast from 'react-hot-toast';
 
 function toYouTubeEmbed(url) {
@@ -17,7 +18,8 @@ function toYouTubeEmbed(url) {
   if (!id) return null;
   const p = new URLSearchParams({
     autoplay: '1', mute: '1', loop: '1', playlist: id,
-    controls: '0', rel: '0', modestbranding: '1', iv_load_policy: '3',
+    controls: '0', rel: '0', modestbranding: '1',
+    iv_load_policy: '3', cc_load_policy: '0', disablekb: '1', fs: '0',
   });
   return `https://www.youtube-nocookie.com/embed/${id}?${p}`;
 }
@@ -43,6 +45,52 @@ function ProductVideos({ videos = [], legacy = '' }) {
     </div>
   );
 }
+
+function StockAlert({ productId }) {
+  const [email, setEmail] = useState('');
+  const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await notifyWhenInStock(productId, email);
+      setSent(true);
+    } catch {
+      toast.error('Could not save. Try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (sent) return <p className="stock-alert-sent">We'll email you when this is back in stock!</p>;
+  return (
+    <form onSubmit={submit} className="stock-alert-form">
+      <p className="stock-alert-label">Get notified when back in stock:</p>
+      <div className="stock-alert-row">
+        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+          placeholder="your@email.com" className="stock-alert-input" />
+        <button type="submit" disabled={busy} className="stock-alert-btn">
+          {busy ? '…' : 'Notify Me'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+const SIZE_GUIDE = [
+  { length: '10"', straight: '~25 cm', bodyWave: '~23 cm', curly: '~20 cm' },
+  { length: '12"', straight: '~30 cm', bodyWave: '~28 cm', curly: '~24 cm' },
+  { length: '14"', straight: '~35 cm', bodyWave: '~33 cm', curly: '~28 cm' },
+  { length: '16"', straight: '~40 cm', bodyWave: '~38 cm', curly: '~32 cm' },
+  { length: '18"', straight: '~45 cm', bodyWave: '~43 cm', curly: '~36 cm' },
+  { length: '20"', straight: '~50 cm', bodyWave: '~48 cm', curly: '~40 cm' },
+  { length: '22"', straight: '~55 cm', bodyWave: '~53 cm', curly: '~44 cm' },
+  { length: '24"', straight: '~60 cm', bodyWave: '~58 cm', curly: '~48 cm' },
+  { length: '26"', straight: '~65 cm', bodyWave: '~63 cm', curly: '~52 cm' },
+  { length: '28"', straight: '~70 cm', bodyWave: '~68 cm', curly: '~56 cm' },
+];
 
 const GOLD  = '#C9A84C';
 const EMPTY = '#e5e7eb';
@@ -73,11 +121,15 @@ export default function ProductDetailPage() {
   const [qty, setQty] = useState(1);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [related, setRelated] = useState([]);
+  const [lightbox, setLightbox] = useState(null);
+  const [sizeGuide, setSizeGuide] = useState(false);
   const { addToCart } = useCart();
   const { user } = useAuth();
 
   useEffect(() => {
     setLoading(true);
+    setImgIdx(0);
     getProduct(id)
       .then(({ data }) => {
         setProduct(data);
@@ -86,6 +138,7 @@ export default function ProductDetailPage() {
       })
       .catch(() => toast.error('Failed to load product'))
       .finally(() => setLoading(false));
+    getRelatedProducts(id).then(({ data }) => setRelated(data)).catch(() => {});
   }, [id]);
 
   const handleAddToCart = () => {
@@ -129,7 +182,7 @@ export default function ProductDetailPage() {
   const fallback = HAIR_IMG[product.hairType] || HAIR_IMG[product.category]
     || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=700&h=800&fit=crop&q=80';
 
-  // YouTube URLs → embedded video; everything else → image
+  // Build gallery: YouTube URLs → iframe, everything else → image
   const galleryItems = (product.images || []).filter(Boolean).map(url => {
     const isYT = url.includes('youtube.com') || url.includes('youtu.be');
     if (isYT) {
@@ -153,17 +206,18 @@ export default function ProductDetailPage() {
           <div className={`gallery-main${current.type === 'video' && current.isShorts ? ' gallery-main-shorts' : ''}`}>
             {current.type === 'video' ? (
               <div className="gallery-video-clip">
-                <iframe
-                  src={current.embed}
-                  className="gallery-video-iframe"
+                <iframe src={current.embed} className="gallery-video-iframe"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title="Product video"
-                />
+                  allowFullScreen title="Product video" />
               </div>
             ) : (
-              <img src={current.src} alt={product.name} className="gallery-main-img"
-                onError={(e) => { e.target.src = fallback; }} />
+              <>
+                <img src={current.src} alt={product.name} className="gallery-main-img"
+                  onError={(e) => { e.target.src = fallback; }} />
+                <button className="gallery-zoom-btn" onClick={() => setLightbox(current.src)} title="View full size">
+                  <ZoomIn size={16} />
+                </button>
+              </>
             )}
             {galleryItems.length > 1 && (
               <>
@@ -181,7 +235,7 @@ export default function ProductDetailPage() {
           <div className="gallery-thumbs">
             {galleryItems.map((item, i) => (
               <button key={i} onClick={() => setImgIdx(i)} className={`gallery-thumb ${i === imgIdx ? 'active' : ''}`}>
-                <img src={item.thumb} alt="" />
+                <img src={item.thumb} alt="" onError={(e) => { e.target.src = fallback; }} />
               </button>
             ))}
           </div>
@@ -215,8 +269,11 @@ export default function ProductDetailPage() {
 
           {product.lengths?.length > 0 && (
             <div className="product-selector">
-              <p className="product-selector-label">
-                Length: <span>{selectedLength}"</span>
+              <p className="product-selector-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span>Length: <span>{selectedLength}"</span></span>
+                <button className="size-guide-link" onClick={() => setSizeGuide(true)}>
+                  <Ruler size={13} /> Size Guide
+                </button>
               </p>
               <div className="product-selector-opts">
                 {product.lengths.map((l) => (
@@ -253,13 +310,17 @@ export default function ProductDetailPage() {
                 onClick={() => setQty((q) => Math.min(product.stock, q + 1))}
                 disabled={qty >= product.stock}>+</button>
             </div>
-            <span className="product-stock-text">{product.stock} in stock</span>
+            {product.stock > 0 && product.stock <= 5
+              ? <span className="product-stock-text" style={{ color: '#dc2626' }}>Only {product.stock} left!</span>
+              : <span className="product-stock-text">{product.stock} in stock</span>
+            }
           </div>
 
           <button onClick={handleAddToCart} disabled={product.stock === 0} className="product-add-btn">
             <ShoppingCart size={18} />
             {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
           </button>
+          {product.stock === 0 && <StockAlert productId={product._id} />}
 
           <div className="product-desc-section">
             <h3 className="product-desc-title">Description</h3>
@@ -281,6 +342,16 @@ export default function ProductDetailPage() {
           <ProductVideos videos={product.videos} legacy={product.video} />
         </div>
       </div>
+
+      {/* Related Products */}
+      {related.length > 0 && (
+        <div className="related-section">
+          <h2 className="related-title">You May Also Like</h2>
+          <div className="related-grid">
+            {related.map((p) => <ProductCard key={p._id} product={p} />)}
+          </div>
+        </div>
+      )}
 
       {/* Reviews */}
       <div className="reviews-section">
@@ -347,6 +418,44 @@ export default function ProductDetailPage() {
           </form>
         </div>
       </div>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
+          <button className="lightbox-close" onClick={() => setLightbox(null)}><X size={24} /></button>
+          <img src={lightbox} alt="Full size" className="lightbox-img" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
+
+      {/* Size Guide Modal */}
+      {sizeGuide && (
+        <div className="lightbox-overlay" onClick={() => setSizeGuide(false)}>
+          <div className="size-guide-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="size-guide-header">
+              <h2>Hair Length Guide</h2>
+              <button onClick={() => setSizeGuide(false)}><X size={20} /></button>
+            </div>
+            <p className="size-guide-note">Lengths are measured from root to tip when hair is straightened. Curly and wavy styles appear shorter due to the curl pattern.</p>
+            <div className="size-guide-table-wrap">
+              <table className="size-guide-table">
+                <thead>
+                  <tr><th>Length</th><th>Straight</th><th>Body Wave</th><th>Curly</th></tr>
+                </thead>
+                <tbody>
+                  {SIZE_GUIDE.map((row) => (
+                    <tr key={row.length}>
+                      <td><strong>{row.length}</strong></td>
+                      <td>{row.straight}</td>
+                      <td>{row.bodyWave}</td>
+                      <td>{row.curly}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -24,9 +24,13 @@ import AdminUsers       from './pages/admin/AdminUsers';
 import AdminCategories  from './pages/admin/AdminCategories';
 import AdminSettings    from './pages/admin/AdminSettings';
 import AdminHeroSlides  from './pages/admin/AdminHeroSlides';
-import AboutPage   from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
-import TopLoader   from './components/ui/TopLoader';
+import AdminPromoCodes  from './pages/admin/AdminPromoCodes';
+import AboutPage    from './pages/AboutPage';
+import ContactPage  from './pages/ContactPage';
+import FAQPage      from './pages/FAQPage';
+import ShippingPage from './pages/ShippingPage';
+import TopLoader    from './components/ui/TopLoader';
+import WhatsAppButton from './components/ui/WhatsAppButton';
 
 function Layout({ children }) {
   return (
@@ -45,6 +49,7 @@ export default function App() {
         <CartProvider>
           <WishlistProvider>
           <TopLoader />
+          <WhatsAppButton />
           <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -58,8 +63,10 @@ export default function App() {
             <Route path="/wishlist" element={<Layout><WishlistPage /></Layout>} />
             <Route path="/orders" element={<Layout><OrderList /></Layout>} />
             <Route path="/orders/:id" element={<Layout><OrderDetail /></Layout>} />
-            <Route path="/about"   element={<Layout><AboutPage /></Layout>} />
-            <Route path="/contact" element={<Layout><ContactPage /></Layout>} />
+            <Route path="/about"    element={<Layout><AboutPage /></Layout>} />
+            <Route path="/contact"  element={<Layout><ContactPage /></Layout>} />
+            <Route path="/faq"      element={<Layout><FAQPage /></Layout>} />
+            <Route path="/shipping" element={<Layout><ShippingPage /></Layout>} />
 
             {/* Admin */}
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
@@ -71,6 +78,7 @@ export default function App() {
             <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
             <Route path="/admin/settings"      element={<AdminRoute><AdminSettings /></AdminRoute>} />
             <Route path="/admin/hero-slides"   element={<AdminRoute><AdminHeroSlides /></AdminRoute>} />
+            <Route path="/admin/promo-codes"   element={<AdminRoute><AdminPromoCodes /></AdminRoute>} />
           </Routes>
           </WishlistProvider>
         </CartProvider>

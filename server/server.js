@@ -27,7 +27,9 @@ app.use('/api/payment',  require('./routes/paymentRoutes'));
 app.use('/api/admin',      require('./routes/adminRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/settings',    require('./routes/settingRoutes'));
-app.use('/api/hero-slides', require('./routes/heroSlideRoutes'));
+app.use('/api/hero-slides',  require('./routes/heroSlideRoutes'));
+app.use('/api/subscribers', require('./routes/subscriberRoutes'));
+app.use('/api/promo',       require('./routes/promoRoutes'));
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 

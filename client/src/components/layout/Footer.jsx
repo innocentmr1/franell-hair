@@ -1,5 +1,13 @@
 import { Link } from 'react-router-dom';
 
+const HELP_LINKS = [
+  { label: 'Track Order',          to: '/orders' },
+  { label: 'Shipping Policy',      to: '/shipping' },
+  { label: 'Returns & Exchanges',  to: '/shipping' },
+  { label: 'FAQ',                  to: '/faq' },
+  { label: 'Contact Us',           to: '/contact' },
+];
+
 const categories = ['Wigs', 'Bundles', 'Closures', 'Frontals', 'Extensions', 'Accessories'];
 
 export default function Footer() {
@@ -43,8 +51,8 @@ export default function Footer() {
         <div>
           <h4 className="footer-col-title">Help</h4>
           <ul className="footer-links">
-            {['Track Order', 'Shipping Policy', 'Returns & Exchanges', 'FAQ', 'Contact Us'].map((item) => (
-              <li key={item}><a href="#" className="footer-link">{item}</a></li>
+            {HELP_LINKS.map(({ label, to }) => (
+              <li key={label}><Link to={to} className="footer-link">{label}</Link></li>
             ))}
           </ul>
         </div>

@@ -133,4 +133,18 @@ const getSiteStats = async (req, res) => {
   }
 };
 
-module.exports = { getProducts, getFeaturedProducts, getProduct, createProduct, updateProduct, deleteProduct, addReview, getTopReviews, getBestseller, getSiteStats };
+const getRelatedProducts = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id).select('category hairType');
+    if (!product) return res.status(404).json({ message: 'Not found' });
+    const related = await Product.find({
+      _id: { $ne: product._id },
+      $or: [{ category: product.category }, { hairType: product.hairType }],
+    }).limit(4).select('name price comparePrice images category rating numReviews stock isNewArrival isFeatured hairType');
+    res.json(related);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { getProducts, getFeaturedProducts, getProduct, createProduct, updateProduct, deleteProduct, addReview, getTopReviews, getBestseller, getSiteStats, getRelatedProducts };

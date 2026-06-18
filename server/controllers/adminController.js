@@ -3,7 +3,7 @@ const Product = require('../models/Product');
 const Order   = require('../models/Order');
 
 const getStats = async (req, res) => {
-  const [totalOrders, totalProducts, totalUsers, revenueAgg, recentOrders, topProducts] =
+  const [totalOrders, totalProducts, totalUsers, revenueAgg, recentOrders, topProducts, monthlyRevenue] =
     await Promise.all([
       Order.countDocuments(),
       Product.countDocuments(),
@@ -11,6 +11,15 @@ const getStats = async (req, res) => {
       Order.aggregate([{ $group: { _id: null, total: { $sum: '$totalPrice' } } }]),
       Order.find().populate('user', 'name email').sort('-createdAt').limit(5),
       Product.find().sort('-sold').limit(5),
+      Order.aggregate([
+        { $group: {
+          _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+          revenue: { $sum: '$totalPrice' },
+        }},
+        { $sort: { '_id.year': 1, '_id.month': 1 } },
+        { $limit: 12 },
+        { $project: { _id: 0, year: '$_id.year', month: '$_id.month', revenue: 1 } },
+      ]),
     ]);
 
   res.json({
@@ -20,6 +29,7 @@ const getStats = async (req, res) => {
     revenue: revenueAgg[0]?.total || 0,
     recentOrders,
     topProducts,
+    monthlyRevenue,
   });
 };
 

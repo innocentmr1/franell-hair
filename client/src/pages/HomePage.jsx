@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Truck, RotateCcw, Shield, CreditCard } from 'lucide-react';
-import { getFeaturedProducts, getTopReviews, getBestseller, getHeroSlides, getCategories, getPerks, getHeroPill, getSiteStats } from '../services/api';
+import { getFeaturedProducts, getTopReviews, getBestseller, getHeroSlides, getCategories, getPerks, getHeroPill, getSiteStats, subscribe } from '../services/api';
 import ProductCard from '../components/ui/ProductCard';
 import HeroSlider from '../components/ui/HeroSlider';
 import { resolveImg } from '../assets/images';
@@ -317,6 +317,56 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Newsletter */}
+      <NewsletterSection />
+
     </div>
+  );
+}
+
+function NewsletterSection() {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState('idle'); // idle | loading | success | error
+  const [msg, setMsg] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus('loading');
+    try {
+      await subscribe(email);
+      setStatus('success');
+      setMsg('You\'re in! Welcome to the Franell Hair family.');
+      setEmail('');
+    } catch (err) {
+      setStatus('error');
+      setMsg(err.response?.data?.message || 'Something went wrong. Try again.');
+    }
+  };
+
+  return (
+    <section className="newsletter-section">
+      <div className="newsletter-inner">
+        <div className="newsletter-text">
+          <h2 className="newsletter-title">Get exclusive deals & hair tips</h2>
+          <p className="newsletter-sub">Join our community and be the first to know about new arrivals, sales, and tutorials.</p>
+        </div>
+        {status === 'success' ? (
+          <p className="newsletter-success">{msg}</p>
+        ) : (
+          <form onSubmit={handleSubmit} className="newsletter-form">
+            <input
+              type="email" required value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Your email address"
+              className="newsletter-input"
+            />
+            <button type="submit" disabled={status === 'loading'} className="newsletter-btn">
+              {status === 'loading' ? 'Subscribing…' : 'Subscribe'}
+            </button>
+          </form>
+        )}
+        {status === 'error' && <p className="newsletter-error">{msg}</p>}
+      </div>
+    </section>
   );
 }

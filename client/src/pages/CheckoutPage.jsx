@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { createOrder } from '../services/api';
+import { createOrder, validatePromo } from '../services/api';
 import toast from 'react-hot-toast';
 
 const STEPS = ['Shipping', 'Payment', 'Review'];
@@ -14,6 +14,9 @@ export default function CheckoutPage() {
 
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(null); // { code, discount }
+  const [promoLoading, setPromoLoading] = useState(false);
 
   const [shippingInfo, setShippingInfo] = useState({
     fullName: user?.name || '',
@@ -33,8 +36,24 @@ export default function CheckoutPage() {
   });
 
   const shippingCost = subtotal > 150 ? 0 : 9.99;
-  const tax   = +(subtotal * 0.08).toFixed(2);
-  const total = +(subtotal + shippingCost + tax).toFixed(2);
+  const discount = promoApplied?.discount || 0;
+  const tax   = +((subtotal - discount) * 0.08).toFixed(2);
+  const total = +(subtotal - discount + shippingCost + tax).toFixed(2);
+
+  const applyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    try {
+      const { data } = await validatePromo(promoCode.trim(), subtotal);
+      setPromoApplied(data);
+      toast.success(`Code applied! You saved $${data.discount.toFixed(2)}`);
+    } catch (err) {
+      setPromoApplied(null);
+      toast.error(err.response?.data?.message || 'Invalid code');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
 
   const handleShipping = (e) => setShippingInfo({ ...shippingInfo, [e.target.name]: e.target.value });
   const handlePayment  = (e) => setPayment({ ...payment, [e.target.name]: e.target.value });
@@ -242,10 +261,33 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
+            {/* Promo code */}
+            <div className="promo-row">
+              <input
+                value={promoCode} onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                placeholder="Promo code" className="promo-input"
+                onKeyDown={(e) => e.key === 'Enter' && applyPromo()}
+              />
+              <button onClick={applyPromo} disabled={promoLoading || !!promoApplied} className="promo-btn">
+                {promoApplied ? 'Applied ✓' : promoLoading ? '…' : 'Apply'}
+              </button>
+            </div>
+            {promoApplied && (
+              <div className="promo-applied">
+                <span>Code <strong>{promoApplied.code}</strong> — save ${promoApplied.discount.toFixed(2)}</span>
+                <button onClick={() => { setPromoApplied(null); setPromoCode(''); }} className="promo-remove">✕</button>
+              </div>
+            )}
+
             <div className="checkout-pricing">
               <div className="checkout-pricing-row">
                 <span>Subtotal</span><span>${subtotal.toFixed(2)}</span>
               </div>
+              {discount > 0 && (
+                <div className="checkout-pricing-row" style={{ color: '#16a34a' }}>
+                  <span>Discount</span><span>−${discount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="checkout-pricing-row">
                 <span>Shipping</span>
                 <span className={shippingCost === 0 ? 'checkout-pricing-free' : ''}>

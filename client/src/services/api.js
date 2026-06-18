@@ -23,6 +23,7 @@ export const getTopReviews = () => api.get('/products/top-reviews');
 export const getBestseller = () => api.get('/products/bestseller');
 export const getProduct = (id) => api.get(`/products/${id}`);
 export const addReview = (id, data) => api.post(`/products/${id}/reviews`, data);
+export const getRelatedProducts = (id) => api.get(`/products/${id}/related`);
 
 // Orders
 export const createOrder = (data) => api.post('/orders', data);
@@ -63,6 +64,19 @@ export const updateHeroPill        = (d)             => api.put('/settings/hero-
 
 // Site Stats
 export const getSiteStats          = ()              => api.get('/products/stats');
+
+// Newsletter
+export const subscribe             = (email)         => api.post('/subscribers', { email });
+
+// Promo codes
+export const validatePromo         = (code, orderTotal) => api.post('/promo/validate', { code, orderTotal });
+export const adminGetPromos        = ()              => api.get('/promo');
+export const adminCreatePromo      = (data)          => api.post('/promo', data);
+export const adminUpdatePromo      = (id, data)      => api.put(`/promo/${id}`, data);
+export const adminDeletePromo      = (id)            => api.delete(`/promo/${id}`);
+
+// Back in stock
+export const notifyWhenInStock     = (productId, email) => api.post('/subscribers/stock-alert', { productId, email });
 
 // Hero Slides
 export const getHeroSlides         = ()              => api.get('/hero-slides');

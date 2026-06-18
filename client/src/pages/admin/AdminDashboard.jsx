@@ -6,6 +6,28 @@ import { getAdminStats } from '../../services/api';
 
 const STATUS_CLASS = { pending:'gray', processing:'blue', shipped:'purple', delivered:'green', cancelled:'red' };
 
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function RevenueChart({ data }) {
+  const max = Math.max(...data.map((d) => d.revenue), 1);
+  return (
+    <div className="rev-chart">
+      {data.map((d) => {
+        const pct = (d.revenue / max) * 100;
+        return (
+          <div key={d.month} className="rev-bar-col">
+            <span className="rev-bar-label">${d.revenue >= 1000 ? (d.revenue/1000).toFixed(1)+'k' : d.revenue.toFixed(0)}</span>
+            <div className="rev-bar-track">
+              <div className="rev-bar-fill" style={{ height: `${Math.max(pct, 2)}%` }} />
+            </div>
+            <span className="rev-bar-month">{MONTHS[(d.month - 1) % 12]}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -81,6 +103,16 @@ export default function AdminDashboard() {
           </table>
         </div>
       </div>
+
+      {/* Revenue chart */}
+      {stats?.monthlyRevenue?.length > 0 && (
+        <div className="admin-card" style={{ padding: '1.25rem' }}>
+          <div className="admin-card-header" style={{ padding: 0, marginBottom: '1rem', border: 'none' }}>
+            <span className="admin-card-title">Monthly Revenue</span>
+          </div>
+          <RevenueChart data={stats.monthlyRevenue} />
+        </div>
+      )}
 
       {/* Top products */}
       <div className="admin-card">
