@@ -119,10 +119,6 @@ export default function HomePage() {
               );
             })()}
 
-            <div className="hero-ship-pill">
-              <p className="hero-ship-label">{heroPill.label}</p>
-              <p className="hero-ship-amount">{heroPill.amount}</p>
-            </div>
           </div>
         </div>
       </section>
