@@ -51,10 +51,7 @@ export default function Footer() {
             <p className="footer-contact-item">info@franellhair.com</p>
             <p className="footer-contact-item">Mon–Fri · 9am–6pm EST</p>
           </div>
-          <div className="footer-shipping-box">
-            <p className="footer-shipping-label">Free shipping on</p>
-            <p className="footer-shipping-value">Orders over $150</p>
-          </div>
+
         </div>
       </div>
 
