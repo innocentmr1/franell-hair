@@ -87,39 +87,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Right — floating badges, desktop only */}
-          <div className="hero-right">
-            {bestseller && (() => {
-              const bsImg = resolveImg(bestseller.images?.[0])
-                || 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=300&h=380&fit=crop&q=80';
-              return (
-                <div
-                  className="hero-product-badge"
-                  style={{ backgroundImage: `url(${bsImg})` }}
-                >
-                  <div className="hero-pb-overlay" />
-                  <div className="hero-pb-content">
-                    <p className="hero-pb-cat">#1 Bestseller</p>
-                    <p className="hero-pb-name">
-                      {bestseller.name.length > 22
-                        ? bestseller.name.slice(0, 22).trim() + '…'
-                        : bestseller.name}
-                    </p>
-                    {bestseller.numReviews > 0 && (
-                      <div className="hero-pb-stars">
-                        <Star size={10} style={{ fill: GOLD, color: GOLD }} />
-                        <span className="hero-pb-rating">
-                          {bestseller.rating.toFixed(1)} ({bestseller.numReviews})
-                        </span>
-                      </div>
-                    )}
-                    <p className="hero-pb-price">${bestseller.price.toFixed(2)}</p>
-                  </div>
-                </div>
-              );
-            })()}
-
-          </div>
         </div>
       </section>
 
