@@ -92,6 +92,10 @@ export const adminCreateSaloon     = (data)          => api.post('/saloons', dat
 export const adminUpdateSaloon     = (id, data)      => api.put(`/saloons/${id}`, data);
 export const adminDeleteSaloon     = (id)            => api.delete(`/saloons/${id}`);
 
+// About page
+export const getAboutPage    = ()     => api.get('/settings/about-page');
+export const updateAboutPage = (data) => api.put('/settings/about-page', data);
+
 // Contact
 export const sendContactMessage    = (data)          => api.post('/contact', data);
 export const adminGetContactMsgs   = ()              => api.get('/contact');

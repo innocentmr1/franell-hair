@@ -1226,6 +1226,7 @@ input, textarea, select { font-family: inherit; }
 .admin-form-textarea:focus { border-color: #111; }
 .admin-form-select  { border: 1.5px solid #d1d5db; border-radius: var(--radius-sm); padding: .5625rem .875rem; font-size: .875rem; font-family: inherit; outline: none; background: #fff; }
 .admin-form-hint    { font-size: .75rem; color: #9ca3af; }
+.admin-section-label { font-size: .8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #6b7280; margin: 0 0 1rem; }
 .admin-form-check-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
 .admin-form-check   { display: flex; align-items: center; gap: .5rem; font-size: .875rem; color: #374151; cursor: pointer; }
 .admin-form-submit  { display: flex; gap: .75rem; flex-wrap: wrap; }
