@@ -333,7 +333,7 @@ export default function ProductDetailPage() {
           <div className="product-desc-section">
             <h3 className="product-desc-title">Description</h3>
             {product.description && (
-              product.description.startsWith('<')
+              /<[a-z]/i.test(product.description)
                 ? <div className="product-desc-html" dangerouslySetInnerHTML={{ __html: product.description }} />
                 : <ul className="product-desc-list">
                     {product.description.split('\n').map(l => l.trim()).filter(Boolean).map((line, i) => (
