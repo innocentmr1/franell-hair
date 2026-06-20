@@ -27,7 +27,7 @@ export default function Footer() {
           <p className="footer-brand-name">Franell</p>
           <p className="footer-brand-sub">Hair</p>
           <p className="footer-brand-desc">
-            Premium 100% Remy Human Hair, Bundles &amp; Extensions—crafted for a flawless, natural look that helps you feel confident and beautiful every day.
+            Premium 100% Remy Human Hair, Bundles &amp; Extensions, crafted for a flawless, natural look that helps you feel confident and beautiful every day.
           </p>
           <div className="footer-socials">
             {['IG', 'TK', 'FB'].map((s) => (
