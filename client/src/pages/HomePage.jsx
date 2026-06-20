@@ -11,10 +11,10 @@ const GOLD = '#C9A84C';
 const ICON_MAP = { Truck, RotateCcw, Shield, CreditCard };
 
 const DEFAULT_PERKS = [
-  { icon: 'Truck',      title: 'Free Shipping',   desc: 'On orders over $200' },
-  { icon: 'RotateCcw',  title: '30-Day Returns',  desc: 'Hassle-free returns' },
+  { icon: 'Truck',      title: 'Free Shipping',   desc: 'Always free, every order' },
+  { icon: 'RotateCcw',  title: '10-Day Returns',  desc: 'Hassle-free returns' },
   { icon: 'Shield',     title: '100% Human Hair', desc: 'Certified & authentic' },
-  { icon: 'CreditCard', title: 'Secure Payment',  desc: 'Flexible payments' },
+  { icon: 'CreditCard', title: 'Secure Payment',  desc: 'Powered by Stripe' },
 ];
 
 const hairTypes = ['Braids', 'Locs', 'Twists', 'Straight', 'Wavy', 'Curly', 'Kinky'];

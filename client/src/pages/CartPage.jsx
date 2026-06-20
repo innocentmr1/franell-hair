@@ -5,9 +5,7 @@ import { useCart } from '../context/CartContext';
 export default function CartPage() {
   const { cartItems, updateQty, removeFromCart, subtotal } = useCart();
 
-  const shipping = subtotal > 150 ? 0 : 9.99;
-  const tax   = +(subtotal * 0.08).toFixed(2);
-  const total = +(subtotal + shipping + tax).toFixed(2);
+  const total = +subtotal.toFixed(2);
 
   if (cartItems.length === 0) {
     return (
@@ -73,19 +71,9 @@ export default function CartPage() {
               </div>
               <div className="cart-summary-row">
                 <span>Shipping</span>
-                <span className={shipping === 0 ? 'cart-ship-free' : ''}>
-                  {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
-                </span>
-              </div>
-              <div className="cart-summary-row">
-                <span>Tax (8%)</span><span>${tax.toFixed(2)}</span>
+                <span className="cart-ship-free">FREE</span>
               </div>
             </div>
-            {subtotal > 0 && subtotal < 150 && (
-              <p className="cart-upsell">
-                Add ${(150 - subtotal).toFixed(2)} more for free shipping!
-              </p>
-            )}
             <div className="cart-summary-total">
               <span>Total</span><span>${total.toFixed(2)}</span>
             </div>

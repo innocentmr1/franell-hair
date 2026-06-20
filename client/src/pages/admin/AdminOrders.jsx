@@ -73,7 +73,7 @@ function OrderDetail({ order }) {
           <div className="ao-pay-row"><span>Shipping</span>
             <span>{order.shippingPrice === 0 ? 'FREE' : `$${order.shippingPrice?.toFixed(2)}`}</span>
           </div>
-          <div className="ao-pay-row"><span>Tax</span><span>${order.taxPrice?.toFixed(2)}</span></div>
+          {order.taxPrice > 0 && <div className="ao-pay-row"><span>Tax</span><span>${order.taxPrice?.toFixed(2)}</span></div>}
           <div className="ao-pay-row ao-pay-total"><span>Total</span><span>${order.totalPrice?.toFixed(2)}</span></div>
         </div>
       </div>
