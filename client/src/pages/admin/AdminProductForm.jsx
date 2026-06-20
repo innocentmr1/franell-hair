@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Plus, Trash2, Image as ImageIcon, Video, Upload, Bold, Italic, Underline, List } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { getProduct, adminCreateProduct, adminUpdateProduct, getCategories, uploadProductFile } from '../../services/api';
-import { LOCAL_IMAGES } from '../../assets/images';
 import toast from 'react-hot-toast';
 
 const BLANK = {
@@ -94,23 +93,6 @@ function UploadBtn({ accept, onUrl, label = 'Upload' }) {
   );
 }
 
-/* ── Local photo picker ── */
-function LocalPicker({ selected, onToggle }) {
-  return (
-    <div className="local-picker">
-      {LOCAL_IMAGES.map((src, i) => {
-        const token = `local:${i}`;
-        const active = selected.includes(token);
-        return (
-          <button key={i} type="button" className={`local-picker-item ${active ? 'selected' : ''}`} onClick={() => onToggle(token)}>
-            <img src={src} alt={`Photo ${i + 1}`} />
-            {active && <span className="local-picker-check">✓</span>}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
 
 export default function AdminProductForm() {
   const { id }     = useParams();
@@ -164,14 +146,6 @@ export default function AdminProductForm() {
   const addImg    = ()       => setImgs((p) => [...p, '']);
   const removeImg = (i)      => setImgs((p) => p.filter((_, x) => x !== i));
   const updateImg = (i, v)   => setImgs((p) => p.map((u, x) => x === i ? v : u));
-  const toggleLocal = (token) => {
-    setImgs((prev) => {
-      if (prev.includes(token)) return prev.filter((u) => u !== token);
-      const empty = prev.findIndex((u) => !u);
-      if (empty >= 0) return prev.map((u, i) => i === empty ? token : u);
-      return [...prev, token];
-    });
-  };
 
   /* Video helpers */
   const addVid    = ()     => setVids((p) => [...p, '']);
@@ -322,10 +296,6 @@ export default function AdminProductForm() {
           <div className="admin-form-group">
             <label className="admin-form-label"><ImageIcon size={14} style={{ display:'inline', marginRight:'.3rem' }} />Product Images</label>
             <p className="admin-form-hint" style={{ marginBottom: '.5rem' }}>
-              Click to select from pre-loaded store photos:
-            </p>
-            <LocalPicker selected={imageInputs} onToggle={toggleLocal} />
-            <p className="admin-form-hint" style={{ margin: '.875rem 0 .5rem' }}>
               Paste an image URL, a YouTube link, or upload from your device:
             </p>
             {imageInputs.map((url, i) => (
