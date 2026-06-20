@@ -26,6 +26,7 @@ const productSchema = new mongoose.Schema(
     videos: [{ type: String }],
     lengths: [{ type: String }],
     colors: [{ type: String }],
+    colorImages: [{ color: { type: String }, image: { type: String } }],
     stock: { type: Number, required: true, default: 0 },
     sold: { type: Number, default: 0 },
     reviews: [reviewSchema],

@@ -15,17 +15,18 @@ export default function CheckoutPage() {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [promoCode, setPromoCode] = useState('');
-  const [promoApplied, setPromoApplied] = useState(null); // { code, discount }
+  const [promoApplied, setPromoApplied] = useState(null);
   const [promoLoading, setPromoLoading] = useState(false);
+  const [shippingMethod, setShippingMethod] = useState('standard');
 
   const [shippingInfo, setShippingInfo] = useState({
     fullName: user?.name || '',
     email: user?.email || '',
     address: '',
     city: '',
-    state: '',
-    zip: '',
-    country: 'US',
+    province: '',
+    postal: '',
+    country: 'Canada',
   });
 
   const [payment, setPayment] = useState({
@@ -35,10 +36,9 @@ export default function CheckoutPage() {
     nameOnCard: '',
   });
 
-  const shippingCost = subtotal > 150 ? 0 : 9.99;
+  const shippingCost = shippingMethod === 'express' ? 30 : 0;
   const discount = promoApplied?.discount || 0;
-  const tax   = +((subtotal - discount) * 0.08).toFixed(2);
-  const total = +(subtotal - discount + shippingCost + tax).toFixed(2);
+  const total = +(subtotal - discount + shippingCost).toFixed(2);
 
   const applyPromo = async () => {
     if (!promoCode.trim()) return;
@@ -72,18 +72,19 @@ export default function CheckoutPage() {
           color: i.color,
         })),
         shippingAddress: {
-          street:  shippingInfo.address,
-          city:    shippingInfo.city,
-          state:   shippingInfo.state,
-          zip:     shippingInfo.zip,
-          country: shippingInfo.country,
+          street:   shippingInfo.address,
+          city:     shippingInfo.city,
+          province: shippingInfo.province,
+          postal:   shippingInfo.postal,
+          country:  shippingInfo.country,
         },
+        shippingMethod,
         paymentMethod: 'Card',
       };
       const { data } = await createOrder(orderData);
       clearCart();
       toast.success('Order placed successfully!');
-      navigate(`/orders/${data._id}`);
+      navigate(`/order-placed/${data._id}`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to place order');
     } finally {
@@ -156,26 +157,49 @@ export default function CheckoutPage() {
                 <div>
                   <label>City</label>
                   <input name="city" required value={shippingInfo.city}
-                    onChange={handleShipping} className="checkout-input" placeholder="New York" />
+                    onChange={handleShipping} className="checkout-input" placeholder="Toronto" />
                 </div>
                 <div>
-                  <label>State</label>
-                  <input name="state" required value={shippingInfo.state}
-                    onChange={handleShipping} className="checkout-input" placeholder="NY" />
+                  <label>Province</label>
+                  <input name="province" required value={shippingInfo.province}
+                    onChange={handleShipping} className="checkout-input" placeholder="Ontario" />
                 </div>
               </div>
               <div className="checkout-grid-2">
                 <div>
-                  <label>ZIP Code</label>
-                  <input name="zip" required value={shippingInfo.zip}
-                    onChange={handleShipping} className="checkout-input" placeholder="10001" />
+                  <label>Postal Code</label>
+                  <input name="postal" required value={shippingInfo.postal}
+                    onChange={handleShipping} className="checkout-input" placeholder="A1B 2C3" />
                 </div>
                 <div>
                   <label>Country</label>
-                  <input name="country" required value={shippingInfo.country}
-                    onChange={handleShipping} className="checkout-input" />
+                  <input name="country" value={shippingInfo.country} readOnly className="checkout-input" style={{ background: '#f9fafb', color: '#6b7280' }} />
                 </div>
               </div>
+
+              {/* Shipping method */}
+              <div style={{ marginTop: '1.25rem' }}>
+                <label style={{ fontWeight: 600, fontSize: '.875rem', display: 'block', marginBottom: '.75rem' }}>Shipping Method</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+                  {[
+                    { value: 'standard', label: 'Standard Shipping', sub: '3 business days', price: 'FREE' },
+                    { value: 'express',  label: 'Express Shipping',  sub: '2 business days', price: '$30.00' },
+                  ].map(({ value, label, sub, price }) => (
+                    <label key={value} className={`shipping-method-opt${shippingMethod === value ? ' active' : ''}`}
+                      style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '.875rem 1rem', border: `2px solid ${shippingMethod === value ? 'var(--gold)' : 'var(--border)'}`, borderRadius: 'var(--radius-sm)', cursor: 'pointer', transition: 'border-color .15s' }}>
+                      <input type="radio" name="shippingMethod" value={value}
+                        checked={shippingMethod === value} onChange={() => setShippingMethod(value)}
+                        style={{ accentColor: 'var(--gold)' }} />
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontWeight: 600, fontSize: '.875rem' }}>{label}</p>
+                        <p style={{ fontSize: '.75rem', color: 'var(--text-secondary)' }}>{sub}</p>
+                      </div>
+                      <span style={{ fontWeight: 700, color: price === 'FREE' ? '#16a34a' : 'var(--black)' }}>{price}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <button type="submit" className="checkout-submit">Continue to Payment</button>
             </form>
           )}
@@ -221,7 +245,7 @@ export default function CheckoutPage() {
                 <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Shipping to:</p>
                 <p style={{ color: '#555', lineHeight: 1.6 }}>
                   {shippingInfo.fullName}<br />
-                  {shippingInfo.address}, {shippingInfo.city}, {shippingInfo.state} {shippingInfo.zip}<br />
+                  {shippingInfo.address}, {shippingInfo.city}, {shippingInfo.province} {shippingInfo.postal}<br />
                   {shippingInfo.country}
                 </p>
               </div>
@@ -289,13 +313,10 @@ export default function CheckoutPage() {
                 </div>
               )}
               <div className="checkout-pricing-row">
-                <span>Shipping</span>
+                <span>Shipping ({shippingMethod === 'express' ? 'Express' : 'Standard'})</span>
                 <span className={shippingCost === 0 ? 'checkout-pricing-free' : ''}>
                   {shippingCost === 0 ? 'FREE' : `$${shippingCost.toFixed(2)}`}
                 </span>
-              </div>
-              <div className="checkout-pricing-row">
-                <span>Tax (8%)</span><span>${tax.toFixed(2)}</span>
               </div>
               <div className="checkout-pricing-total">
                 <span>Total</span><span>${total.toFixed(2)}</span>

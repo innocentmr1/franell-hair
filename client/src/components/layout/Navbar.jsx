@@ -6,10 +6,7 @@ import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { getCategories, getAnnouncement } from '../../services/api';
 
-const FALLBACK_CATS = [
-  { name: 'Wigs' }, { name: 'Bundles' }, { name: 'Closures' },
-  { name: 'Frontals' }, { name: 'Extensions' }, { name: 'Braiding Hair' },
-];
+const FALLBACK_CATS = [];
 
 const NAV_LINKS = [
   { label: 'Home',    to: '/' },

@@ -85,4 +85,11 @@ export const deleteHeroSlide       = (id)            => api.delete(`/hero-slides
 export const uploadHeroImage       = (formData)      => api.post('/hero-slides/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const reorderHeroSlides     = (ids)           => api.put('/hero-slides/reorder', { ids });
 
+// Saloons
+export const getSaloons            = ()              => api.get('/saloons');
+export const adminGetSaloons       = ()              => api.get('/saloons/all');
+export const adminCreateSaloon     = (data)          => api.post('/saloons', data);
+export const adminUpdateSaloon     = (id, data)      => api.put(`/saloons/${id}`, data);
+export const adminDeleteSaloon     = (id)            => api.delete(`/saloons/${id}`);
+
 export default api;

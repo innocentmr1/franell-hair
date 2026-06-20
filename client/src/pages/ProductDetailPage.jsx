@@ -118,6 +118,7 @@ export default function ProductDetailPage() {
   const [imgIdx, setImgIdx] = useState(0);
   const [selectedLength, setSelectedLength] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
+  const [colorOverride, setColorOverride] = useState(null);
   const [qty, setQty] = useState(1);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [reviewLoading, setReviewLoading] = useState(false);
@@ -134,7 +135,10 @@ export default function ProductDetailPage() {
       .then(({ data }) => {
         setProduct(data);
         setSelectedLength(data.lengths?.[0] || '');
-        setSelectedColor(data.colors?.[0] || '');
+        const firstColor = data.colors?.[0] || '';
+    setSelectedColor(firstColor);
+    const firstCI = data.colorImages?.find((ci) => ci.color === firstColor);
+    setColorOverride(firstCI?.image || null);
       })
       .catch(() => toast.error('Failed to load product'))
       .finally(() => setLoading(false));
@@ -212,7 +216,7 @@ export default function ProductDetailPage() {
               </div>
             ) : (
               <>
-                <img src={current.src} alt={product.name} className="gallery-main-img"
+                <img src={colorOverride || current.src} alt={product.name} className="gallery-main-img"
                   onError={(e) => { e.target.src = fallback; }} />
                 <button className="gallery-zoom-btn" onClick={() => setLightbox(current.src)} title="View full size">
                   <ZoomIn size={16} />
@@ -293,7 +297,11 @@ export default function ProductDetailPage() {
               </p>
               <div className="product-selector-opts">
                 {product.colors.map((c) => (
-                  <button key={c} onClick={() => setSelectedColor(c)}
+                  <button key={c} onClick={() => {
+                    setSelectedColor(c);
+                    const ci = product.colorImages?.find((ci) => ci.color === c);
+                    setColorOverride(ci?.image || null);
+                  }}
                     className={`selector-btn ${selectedColor === c ? 'active' : ''}`}>
                     {c}
                   </button>
@@ -325,17 +333,13 @@ export default function ProductDetailPage() {
           <div className="product-desc-section">
             <h3 className="product-desc-title">Description</h3>
             {product.description && (
-              <ul className="product-desc-list">
-                {product.description
-                  .split('\n')
-                  .map(line => line.trim())
-                  .filter(Boolean)
-                  .map((line, i) => (
-                    <li key={i} className="product-desc-item">
-                      {line.replace(/^[-•*]\s*/, '')}
-                    </li>
-                  ))}
-              </ul>
+              product.description.startsWith('<')
+                ? <div className="product-desc-html" dangerouslySetInnerHTML={{ __html: product.description }} />
+                : <ul className="product-desc-list">
+                    {product.description.split('\n').map(l => l.trim()).filter(Boolean).map((line, i) => (
+                      <li key={i} className="product-desc-item">{line.replace(/^[-•*]\s*/, '')}</li>
+                    ))}
+                  </ul>
             )}
           </div>
 

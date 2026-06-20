@@ -25,6 +25,8 @@ import AdminCategories  from './pages/admin/AdminCategories';
 import AdminSettings    from './pages/admin/AdminSettings';
 import AdminHeroSlides  from './pages/admin/AdminHeroSlides';
 import AdminPromoCodes  from './pages/admin/AdminPromoCodes';
+import AdminSaloons     from './pages/admin/AdminSaloons';
+import OrderPlacedPage from './pages/OrderPlacedPage';
 import AboutPage    from './pages/AboutPage';
 import ContactPage  from './pages/ContactPage';
 import FAQPage      from './pages/FAQPage';
@@ -63,6 +65,7 @@ export default function App() {
             <Route path="/wishlist" element={<Layout><WishlistPage /></Layout>} />
             <Route path="/orders" element={<Layout><OrderList /></Layout>} />
             <Route path="/orders/:id" element={<Layout><OrderDetail /></Layout>} />
+            <Route path="/order-placed/:id" element={<Layout><OrderPlacedPage /></Layout>} />
             <Route path="/about"    element={<Layout><AboutPage /></Layout>} />
             <Route path="/contact"  element={<Layout><ContactPage /></Layout>} />
             <Route path="/faq"      element={<Layout><FAQPage /></Layout>} />
@@ -79,6 +82,7 @@ export default function App() {
             <Route path="/admin/settings"      element={<AdminRoute><AdminSettings /></AdminRoute>} />
             <Route path="/admin/hero-slides"   element={<AdminRoute><AdminHeroSlides /></AdminRoute>} />
             <Route path="/admin/promo-codes"   element={<AdminRoute><AdminPromoCodes /></AdminRoute>} />
+            <Route path="/admin/saloons"       element={<AdminRoute><AdminSaloons /></AdminRoute>} />
           </Routes>
           </WishlistProvider>
         </CartProvider>

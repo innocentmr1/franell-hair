@@ -1,23 +1,68 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Plus, Trash2, Image as ImageIcon, Video, Upload } from 'lucide-react';
+import { Plus, Trash2, Image as ImageIcon, Video, Upload, Bold, Italic, Underline, List } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { getProduct, adminCreateProduct, adminUpdateProduct, getCategories, uploadProductFile } from '../../services/api';
 import { LOCAL_IMAGES } from '../../assets/images';
 import toast from 'react-hot-toast';
 
-const FALLBACK_CATS = ['Wigs', 'Bundles', 'Closures', 'Frontals', 'Braiding Hair', 'Crochet Hair', 'Locs', 'Twists', 'Extensions', 'Accessories'];
-const HAIR_TYPES    = ['Braids', 'Locs', 'Twists', 'Straight', 'Wavy', 'Curly', 'Kinky'];
-
 const BLANK = {
   name: '', description: '',
   price: '', comparePrice: '',
-  category: '', hairType: 'Braids',
-  lengths: '', colors: '', stock: '',
+  category: '',
+  lengths: '', stock: '',
   isFeatured: false, isNewArrival: false,
 };
 
-/* Upload button — opens a file picker, uploads, calls onUrl with the returned URL */
+/* ── Rich text editor ── */
+function RichTextEditor({ value, onChange }) {
+  const ref = useRef(null);
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (ref.current && !initialized.current) {
+      ref.current.innerHTML = value || '';
+      initialized.current = true;
+    }
+  }, [value]);
+
+  const exec = (cmd, val = null) => {
+    ref.current?.focus();
+    document.execCommand(cmd, false, val);
+    onChange(ref.current?.innerHTML || '');
+  };
+
+  return (
+    <div className="rte-wrap">
+      <div className="rte-toolbar">
+        <button type="button" title="Bold" onMouseDown={(e) => { e.preventDefault(); exec('bold'); }}><strong>B</strong></button>
+        <button type="button" title="Italic" onMouseDown={(e) => { e.preventDefault(); exec('italic'); }}><em>I</em></button>
+        <button type="button" title="Underline" onMouseDown={(e) => { e.preventDefault(); exec('underline'); }}><u>U</u></button>
+        <select
+          defaultValue=""
+          onMouseDown={(e) => e.preventDefault()}
+          onChange={(e) => { exec('fontSize', e.target.value); e.target.value = ''; }}>
+          <option value="" disabled>Size</option>
+          <option value="2">Small</option>
+          <option value="3">Normal</option>
+          <option value="4">Large</option>
+          <option value="5">X-Large</option>
+        </select>
+        <button type="button" title="Bullet list" onMouseDown={(e) => { e.preventDefault(); exec('insertUnorderedList'); }}>• List</button>
+        <button type="button" title="Clear formatting" onMouseDown={(e) => { e.preventDefault(); exec('removeFormat'); }}>Clear</button>
+      </div>
+      <div
+        ref={ref}
+        contentEditable
+        className="rte-editor"
+        onInput={() => onChange(ref.current?.innerHTML || '')}
+        suppressContentEditableWarning
+      />
+    </div>
+  );
+}
+
+/* ── Upload button ── */
 function UploadBtn({ accept, onUrl, label = 'Upload' }) {
   const ref = useRef(null);
   const [busy, setBusy] = useState(false);
@@ -49,7 +94,7 @@ function UploadBtn({ accept, onUrl, label = 'Upload' }) {
   );
 }
 
-/* Local photo picker grid */
+/* ── Local photo picker ── */
 function LocalPicker({ selected, onToggle }) {
   return (
     <div className="local-picker">
@@ -75,7 +120,8 @@ export default function AdminProductForm() {
   const [form, setForm]           = useState(BLANK);
   const [imageInputs, setImgs]    = useState(['']);
   const [videoInputs, setVids]    = useState(['']);
-  const [cats, setCats]           = useState(FALLBACK_CATS);
+  const [colorItems, setColorItems] = useState([{ name: '', image: '' }]);
+  const [cats, setCats]           = useState([]);
   const [loading, setLoading]     = useState(false);
   const [fetching, setFetching]   = useState(isEdit);
 
@@ -90,15 +136,20 @@ export default function AdminProductForm() {
         setForm({
           name: data.name, description: data.description,
           price: data.price, comparePrice: data.comparePrice || '',
-          category: data.category, hairType: data.hairType || 'Braids',
+          category: data.category,
           lengths: data.lengths?.join(', ') || '',
-          colors:  data.colors?.join(', ')  || '',
           stock: data.stock,
           isFeatured: data.isFeatured, isNewArrival: data.isNewArrival,
         });
         setImgs(data.images?.length ? data.images : ['']);
         const vids = data.videos?.length ? data.videos : (data.video ? [data.video] : ['']);
         setVids(vids.length ? vids : ['']);
+        if (data.colors?.length) {
+          setColorItems(data.colors.map((c) => ({
+            name: c,
+            image: data.colorImages?.find((ci) => ci.color === c)?.image || '',
+          })));
+        }
       })
       .catch(() => toast.error('Failed to load product'))
       .finally(() => setFetching(false));
@@ -127,18 +178,25 @@ export default function AdminProductForm() {
   const removeVid = (i)    => setVids((p) => p.filter((_, x) => x !== i));
   const updateVid = (i, v) => setVids((p) => p.map((u, x) => x === i ? v : u));
 
+  /* Color helpers */
+  const addColor    = ()            => setColorItems((p) => [...p, { name: '', image: '' }]);
+  const removeColor = (i)           => setColorItems((p) => p.filter((_, x) => x !== i));
+  const updateColor = (i, key, v)   => setColorItems((p) => p.map((c, x) => x === i ? { ...c, [key]: v } : c));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const cleanVideos = videoInputs.filter(Boolean);
+      const validColors = colorItems.filter((c) => c.name.trim());
       const payload = {
         ...form,
         price:        parseFloat(form.price),
         comparePrice: form.comparePrice ? parseFloat(form.comparePrice) : 0,
         stock:        parseInt(form.stock, 10),
         lengths: form.lengths.split(',').map((s) => s.trim()).filter(Boolean),
-        colors:  form.colors.split(',').map((s) => s.trim()).filter(Boolean),
+        colors:  validColors.map((c) => c.name.trim()),
+        colorImages: validColors.filter((c) => c.image).map((c) => ({ color: c.name.trim(), image: c.image })),
         images:  imageInputs.filter(Boolean),
         videos:  cleanVideos,
         video:   cleanVideos[0] || '',
@@ -180,25 +238,21 @@ export default function AdminProductForm() {
               <input name="name" required value={form.name} onChange={set}
                 className="admin-form-input" placeholder='e.g. HD Lace Front Wig Body Wave 13x4 24"' />
             </div>
-            <div className="admin-form-group">
+            <div className="admin-form-group" style={{ gridColumn: '1 / -1' }}>
               <label className="admin-form-label">Category *</label>
               <select name="category" value={form.category} onChange={set} className="admin-form-select" required>
                 <option value="">— select —</option>
                 {cats.map((c) => <option key={c}>{c}</option>)}
               </select>
             </div>
-            <div className="admin-form-group">
-              <label className="admin-form-label">Hair Type</label>
-              <select name="hairType" value={form.hairType} onChange={set} className="admin-form-select">
-                {HAIR_TYPES.map((t) => <option key={t}>{t}</option>)}
-              </select>
-            </div>
           </div>
 
           <div className="admin-form-group">
             <label className="admin-form-label">Description *</label>
-            <textarea name="description" required value={form.description} onChange={set}
-              className="admin-form-textarea" placeholder="Describe the product…" rows={4} />
+            <RichTextEditor
+              value={form.description}
+              onChange={(html) => setForm((f) => ({ ...f, description: html }))}
+            />
           </div>
 
           {/* ── Pricing ── */}
@@ -231,23 +285,46 @@ export default function AdminProductForm() {
             </div>
           </div>
 
+          {/* ── Colors with images ── */}
           <div className="admin-form-group">
-            <label className="admin-form-label">Colors (comma-separated)</label>
-            <input name="colors" value={form.colors} onChange={set}
-              className="admin-form-input" placeholder="Natural Black, T30 Honey Brown, Burgundy" />
+            <label className="admin-form-label">Colors & Color Images</label>
+            <p className="admin-form-hint" style={{ marginBottom: '.5rem' }}>Add each color and optionally a photo that shows that colour — customers will see it when they select the colour.</p>
+            {colorItems.map((item, i) => (
+              <div key={i} style={{ display: 'flex', gap: '.5rem', alignItems: 'center', marginBottom: '.5rem', flexWrap: 'wrap' }}>
+                <input
+                  value={item.name}
+                  onChange={(e) => updateColor(i, 'name', e.target.value)}
+                  className="admin-form-input"
+                  placeholder="e.g. Natural Black"
+                  style={{ flex: '1', minWidth: '140px' }}
+                />
+                <input
+                  value={item.image}
+                  onChange={(e) => updateColor(i, 'image', e.target.value)}
+                  className="admin-form-input"
+                  placeholder="Image URL for this colour (optional)"
+                  style={{ flex: '2', minWidth: '180px' }}
+                />
+                <UploadBtn accept="image/*" onUrl={(u) => updateColor(i, 'image', u)} label="Upload" />
+                {colorItems.length > 1 && (
+                  <button type="button" onClick={() => removeColor(i)} className="admin-media-remove">
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </div>
+            ))}
+            <button type="button" onClick={addColor} className="admin-add-field-btn">
+              <Plus size={13} /> Add colour
+            </button>
           </div>
 
           {/* ── Images ── */}
           <div className="admin-form-group">
             <label className="admin-form-label"><ImageIcon size={14} style={{ display:'inline', marginRight:'.3rem' }} />Product Images</label>
-
-            {/* Local photo picker */}
             <p className="admin-form-hint" style={{ marginBottom: '.5rem' }}>
               Click to select from pre-loaded store photos:
             </p>
             <LocalPicker selected={imageInputs} onToggle={toggleLocal} />
-
-            {/* URL inputs */}
             <p className="admin-form-hint" style={{ margin: '.875rem 0 .5rem' }}>
               Paste an image URL, a YouTube link, or upload from your device:
             </p>

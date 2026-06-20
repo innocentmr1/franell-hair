@@ -109,7 +109,7 @@ export default function HomePage() {
               {categories.map((cat) => (
                 <Link
                   key={cat._id}
-                  to={`/shop?category=${encodeURIComponent(cat.slug || cat.name)}`}
+                  to={`/shop?category=${encodeURIComponent(cat.name)}`}
                   className="cat-card"
                 >
                   {cat.image ? (

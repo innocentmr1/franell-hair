@@ -1,11 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X } from 'lucide-react';
-import { getProducts } from '../services/api';
+import { getProducts, getCategories } from '../services/api';
 import ProductCard from '../components/ui/ProductCard';
-
-const CATEGORIES = ['Wigs', 'Braiding Hair', 'Crochet Hair', 'Locs', 'Twists', 'Extensions', 'Accessories'];
-const HAIR_TYPES = ['Braids', 'Locs', 'Twists', 'Straight', 'Wavy', 'Curly', 'Kinky'];
 const SORT_OPTIONS = [
   { value: 'newest',    label: 'Newest' },
   { value: 'price_asc', label: 'Price: Low to High' },
@@ -20,9 +17,14 @@ export default function ShopPage() {
   const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [cats, setCats] = useState([]);
+
+  useEffect(() => {
+    getCategories().then(({ data }) => setCats(data)).catch(() => {});
+  }, []);
 
   const category = searchParams.get('category') || '';
-  const hairType  = searchParams.get('hairType')  || '';
+  const hairType  = '';
   const search    = searchParams.get('search')    || '';
   const sort      = searchParams.get('sort')      || 'newest';
   const page      = Number(searchParams.get('page')) || 1;
@@ -61,22 +63,10 @@ export default function ShopPage() {
             className={`filter-btn ${!category ? 'active' : ''}`}>
             All Products ({total})
           </button>
-          {CATEGORIES.map((cat) => (
-            <button key={cat} onClick={() => setParam('category', cat)}
-              className={`filter-btn ${category === cat ? 'active' : ''}`}>
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="filter-section">
-        <h3 className="filter-section-title">Hair Type</h3>
-        <div className="filter-options">
-          {HAIR_TYPES.map((type) => (
-            <button key={type} onClick={() => setParam('hairType', hairType === type ? '' : type)}
-              className={`filter-btn ${hairType === type ? 'active' : ''}`}>
-              {type}
+          {cats.map((cat) => (
+            <button key={cat._id || cat.name} onClick={() => setParam('category', cat.name)}
+              className={`filter-btn ${category === cat.name ? 'active' : ''}`}>
+              {cat.name}
             </button>
           ))}
         </div>
@@ -94,7 +84,7 @@ export default function ShopPage() {
         </div>
       </div>
 
-      {(category || hairType || minPrice || maxPrice || search) && (
+      {(category || minPrice || maxPrice || search) && (
         <button onClick={() => setSearchParams({})} className="filter-clear">
           <X size={12} /> Clear all filters
         </button>

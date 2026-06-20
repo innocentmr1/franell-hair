@@ -30,8 +30,8 @@ export default function ContactPage() {
         <div className="contact-info-grid">
           {[
             { icon: Mail,   label: 'Email Us',       value: 'info@franellhair.com' },
-            { icon: Phone,  label: 'Call Us',         value: '+1 (555) 123-4567' },
-            { icon: MapPin, label: 'Location',        value: 'Atlanta, GA, USA' },
+            { icon: Phone,  label: 'Call Us',         value: '+1 (709) 341-7527' },
+            { icon: MapPin, label: 'Location',        value: 'Ontario, Canada' },
             { icon: Clock,  label: 'Business Hours',  value: 'Mon–Sat 9am – 6pm EST' },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="contact-info-card">

@@ -16,7 +16,7 @@ export default function Footer() {
         <div className="footer-cta-inner">
           <div>
             <p className="footer-cta-title">Ready for your best hair day?</p>
-            <p className="footer-cta-sub">Join over 1,000 women who trust Franell Hair.</p>
+            <p className="footer-cta-sub">Join over 100+ women who trust Franell Hair.</p>
           </div>
           <Link to="/shop" className="footer-cta-btn">Shop Now</Link>
         </div>
