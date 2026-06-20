@@ -417,14 +417,16 @@ input, textarea, select { font-family: inherit; }
 .product-price-compare { font-size: .75rem; color: var(--text-muted); text-decoration: line-through; }
 
 /* ─── 10. HOME PAGE ─────────────────────────────────── */
-.hero { background: var(--black); overflow: hidden; position: relative; min-height: 100vh; display: flex; align-items: center; }
+.hero { background: var(--black); overflow: hidden; position: relative; min-height: 100vh; display: flex; align-items: flex-end; }
 .hero-bg-overlay {
   position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background: linear-gradient(105deg, rgba(0,0,0,.72) 0%, rgba(0,0,0,.38) 55%, rgba(0,0,0,.10) 100%);
+  background:
+    linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.45) 40%, rgba(0,0,0,.0) 70%),
+    linear-gradient(to right, rgba(0,0,0,.45) 0%, transparent 60%);
 }
 .hero-inner {
-  max-width: var(--container-max); margin: 0 auto; padding: 4rem var(--container-pad);
-  display: grid; grid-template-columns: 1fr; gap: 3rem; align-items: center;
+  max-width: var(--container-max); margin: 0 auto; padding: 2rem var(--container-pad) 4.5rem;
+  display: grid; grid-template-columns: 1fr; gap: 3rem; align-items: end;
   position: relative; z-index: 2; width: 100%;
 }
 .hero-badge {
@@ -460,7 +462,7 @@ input, textarea, select { font-family: inherit; }
 .hero-slider { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; }
 .hero-slide {
   position: absolute; inset: 0; width: 100%; height: 100%;
-  background-size: cover; background-position: center center;
+  background-size: cover; background-position: center top;
   opacity: 0; transition: opacity .6s ease;
   pointer-events: none;
 }
@@ -1050,9 +1052,10 @@ input, textarea, select { font-family: inherit; }
   .auth-mobile-logo { display: none; }
   .auth-right       { padding: 3.5rem 4rem; }
 
-  .hero-inner     { grid-template-columns: 1fr 1fr; gap: 4rem; padding: 7rem var(--container-pad); }
+  .hero-inner     { grid-template-columns: 1fr 1fr; gap: 4rem; padding: 3rem var(--container-pad) 6rem; }
   .hero-title     { font-size: 4rem; }
   .hero-right     { display: block; }
+  .hero-slide     { background-position: center 30%; }
   .grid-products  { grid-template-columns: repeat(4,1fr); }
 }
 
@@ -1620,3 +1623,15 @@ input, textarea, select { font-family: inherit; }
 
 /* ── Reviews social proof ── */
 .reviews-social-proof { display: flex; flex-direction: column; align-items: center; gap: .25rem; margin-top: 1rem; }
+
+/* ── Hero button shimmer ── */
+@keyframes hero-btn-shimmer {
+  0%   { background-position: -250% center; }
+  100% { background-position: 250% center; }
+}
+.hero-cta-group .btn-gold {
+  background: linear-gradient(90deg, var(--gold) 25%, #f7e98e 48%, var(--gold-light) 52%, var(--gold) 75%);
+  background-size: 300% 100%;
+  animation: hero-btn-shimmer 2.8s linear infinite;
+}
+.hero-cta-group .btn-gold:hover { animation-play-state: paused; }
