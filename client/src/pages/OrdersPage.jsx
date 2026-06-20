@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Package, CheckCircle, Truck, Clock, XCircle, ChevronRight, MapPin, CreditCard, Star, X } from 'lucide-react';
-import { getMyOrders, getOrder, addReview } from '../services/api';
+import { Package, CheckCircle, Truck, Clock, XCircle, ChevronRight, MapPin, CreditCard, Star, X, Phone, Scissors } from 'lucide-react';
+import { getMyOrders, getOrder, addReview, getSaloons } from '../services/api';
 import { resolveImg } from '../assets/images';
 import toast from 'react-hot-toast';
 
@@ -159,27 +159,89 @@ function ReviewModal({ order, onClose }) {
   );
 }
 
+/* ── Salon recommendation popup ─────────────────────────── */
+function SalonPopup({ orderId, onClose }) {
+  const [salons, setSalons] = useState([]);
+
+  useEffect(() => {
+    getSaloons().then(({ data }) => setSalons(data)).catch(() => {});
+  }, []);
+
+  const handleClose = () => {
+    localStorage.setItem(`salon_shown_${orderId}`, '1');
+    onClose();
+  };
+
+  if (!salons.length) return null;
+
+  return (
+    <div className="review-overlay" onClick={(e) => e.target === e.currentTarget && handleClose()}>
+      <div className="salon-popup">
+        <div className="salon-popup-hd">
+          <div className="salon-popup-hd-text">
+            <Scissors size={18} className="salon-popup-icon" />
+            <div>
+              <p className="salon-popup-title">Your hair is on its way!</p>
+              <p className="salon-popup-sub">Book a professional installation at one of our recommended salons.</p>
+            </div>
+          </div>
+          <button onClick={handleClose} className="review-close-btn"><X size={18} /></button>
+        </div>
+
+        <div className="salon-popup-grid">
+          {salons.map((s) => (
+            <div key={s._id} className="salon-popup-card">
+              {s.images?.[0] && (
+                <img src={s.images[0]} alt={s.name} className="salon-popup-img"
+                  onError={(e) => { e.target.style.display = 'none'; }} />
+              )}
+              <div className="salon-popup-info">
+                <p className="salon-popup-name">{s.name}</p>
+                <p className="salon-popup-addr"><MapPin size={11} /> {s.address}</p>
+                {s.phone && <p className="salon-popup-phone"><Phone size={11} /> {s.phone}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button onClick={handleClose} className="salon-popup-dismiss">Maybe later</button>
+      </div>
+    </div>
+  );
+}
+
 /* ── Order Detail ───────────────────────────────────────── */
 export function OrderDetail() {
   const { id } = useParams();
-  const [order, setOrder]       = useState(null);
-  const [loading, setLoading]   = useState(true);
+  const [order, setOrder]           = useState(null);
+  const [loading, setLoading]       = useState(true);
   const [showReview, setShowReview] = useState(false);
+  const [showSalon, setShowSalon]   = useState(false);
 
   useEffect(() => {
     getOrder(id)
       .then(({ data }) => {
         setOrder(data);
-        if (
-          data.status === 'delivered' &&
-          !localStorage.getItem(`reviewed_${data._id}`)
-        ) {
-          setTimeout(() => setShowReview(true), 800);
+        if (data.status === 'delivered') {
+          const reviewed    = localStorage.getItem(`reviewed_${data._id}`);
+          const salonShown  = localStorage.getItem(`salon_shown_${data._id}`);
+          if (!reviewed) {
+            setTimeout(() => setShowReview(true), 800);
+          } else if (!salonShown) {
+            setTimeout(() => setShowSalon(true), 800);
+          }
         }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id]);
+
+  const handleReviewClose = () => {
+    setShowReview(false);
+    if (order && !localStorage.getItem(`salon_shown_${order._id}`)) {
+      setTimeout(() => setShowSalon(true), 400);
+    }
+  };
 
   if (loading) return <div className="page-loading"><div className="spinner" /></div>;
   if (!order) return (
@@ -195,7 +257,10 @@ export function OrderDetail() {
   return (
     <div className="order-detail-page">
       {showReview && (
-        <ReviewModal order={order} onClose={() => setShowReview(false)} />
+        <ReviewModal order={order} onClose={handleReviewClose} />
+      )}
+      {showSalon && (
+        <SalonPopup orderId={order._id} onClose={() => setShowSalon(false)} />
       )}
 
       <div className="order-detail-topbar">
