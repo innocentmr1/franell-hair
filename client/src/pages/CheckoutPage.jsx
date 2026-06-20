@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { CreditCard, Building2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -10,36 +10,85 @@ import toast from 'react-hot-toast';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const CARD_OPTS = {
-  style: {
-    base: {
-      fontSize: '15px',
-      color: '#111827',
-      fontFamily: 'inherit',
-      '::placeholder': { color: '#9ca3af' },
-    },
-    invalid: { color: '#dc2626' },
-  },
+const STRIPE_APPEARANCE = {
+  theme: 'stripe',
+  variables: { colorPrimary: '#C9A84C', borderRadius: '6px' },
 };
 
-const STEPS = ['Shipping', 'Payment', 'Review'];
+const STEPS = ['Shipping', 'Payment'];
 
-function CheckoutInner() {
+// Must be rendered inside <Elements> so useStripe/useElements work
+function CardPaymentStep({ onBack, orderData, shippingEmail, total }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const navigate = useNavigate();
+  const { clearCart } = useCart();
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handlePay = async () => {
+    if (!stripe || !elements) return;
+    setLoading(true);
+    setError('');
+    const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
+      elements,
+      redirect: 'if_required',
+    });
+    if (confirmError) {
+      setError(confirmError.message);
+      setLoading(false);
+      return;
+    }
+    try {
+      const { data: order } = await createOrder(orderData);
+      try {
+        await payOrder(order._id, {
+          id: paymentIntent.id,
+          status: paymentIntent.status,
+          update_time: new Date().toISOString(),
+          email_address: shippingEmail,
+        });
+      } catch (_) {}
+      clearCart();
+      toast.success('Payment successful!');
+      navigate(`/order-placed/${order._id}`);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to place order. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="checkout-form">
+      <h2 className="checkout-form-title">Card Details</h2>
+      <p className="stripe-card-note" style={{ marginBottom: '1.25rem' }}>
+        Secured by Stripe — your card details are never stored on our servers.
+      </p>
+      <PaymentElement options={{ layout: 'tabs' }} />
+      {error && <p className="stripe-card-error" style={{ marginTop: '.75rem' }}>{error}</p>}
+      <div style={{ display: 'flex', gap: '.75rem', marginTop: '1.5rem' }}>
+        <button type="button" onClick={onBack} className="checkout-back">Back</button>
+        <button onClick={handlePay} disabled={loading || !stripe} className="checkout-submit">
+          {loading ? 'Processing…' : `Pay $${total.toFixed(2)} CAD`}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function CheckoutPage() {
   const { cartItems, subtotal, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const stripe = useStripe();
-  const elements = useElements();
 
-  const [step, setStep]               = useState(0);
-  const [loading, setLoading]         = useState(false);
-  const [promoCode, setPromoCode]     = useState('');
-  const [promoApplied, setPromoApplied] = useState(null);
-  const [promoLoading, setPromoLoading] = useState(false);
+  const [step, setStep]                   = useState(0);
+  const [loading, setLoading]             = useState(false);
+  const [promoCode, setPromoCode]         = useState('');
+  const [promoApplied, setPromoApplied]   = useState(null);
+  const [promoLoading, setPromoLoading]   = useState(false);
   const [shippingMethod, setShippingMethod] = useState('standard');
-  const [payMethod, setPayMethod]     = useState('card');
-  const [savedPmId, setSavedPmId]     = useState('');
-  const [cardError, setCardError]     = useState('');
+  const [payMethod, setPayMethod]         = useState('card');
+  const [clientSecret, setClientSecret]   = useState('');
 
   const [shippingInfo, setShippingInfo] = useState({
     fullName: user?.name || '',
@@ -66,20 +115,21 @@ function CheckoutInner() {
 
   const handleShipping = (e) => setShippingInfo({ ...shippingInfo, [e.target.name]: e.target.value });
 
-  /* Step 1 → Step 2: tokenise card if card selected */
-  const handlePaymentContinue = async (e) => {
+  const handleContinueToPayment = async (e) => {
     e.preventDefault();
-    if (payMethod === 'interac') { setStep(2); return; }
-    if (!stripe || !elements) return;
-    setLoading(true);
-    setCardError('');
-    const { error, paymentMethod } = await stripe.createPaymentMethod({
-      type: 'card',
-      card: elements.getElement(CardElement),
-    });
-    setLoading(false);
-    if (error) { setCardError(error.message); }
-    else { setSavedPmId(paymentMethod.id); setStep(2); }
+    if (payMethod === 'card') {
+      setLoading(true);
+      try {
+        const { data } = await createPaymentIntent(total);
+        setClientSecret(data.clientSecret);
+      } catch {
+        toast.error('Could not initialize payment. Please try again.');
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
+    }
+    setStep(1);
   };
 
   const buildOrderData = () => ({
@@ -96,30 +146,12 @@ function CheckoutInner() {
     paymentMethod: payMethod === 'card' ? 'Card' : 'Interac e-Transfer',
   });
 
-  const handlePlaceOrder = async () => {
+  const handleInteracOrder = async () => {
     setLoading(true);
     try {
-      if (payMethod === 'card') {
-        const { data: piData } = await createPaymentIntent(total);
-        const { error, paymentIntent } = await stripe.confirmCardPayment(piData.clientSecret, {
-          payment_method: savedPmId,
-        });
-        if (error) { toast.error(error.message); setLoading(false); return; }
-        const { data: order } = await createOrder(buildOrderData());
-        try {
-          await payOrder(order._id, {
-            id: paymentIntent.id, status: paymentIntent.status,
-            update_time: new Date().toISOString(), email_address: shippingInfo.email,
-          });
-        } catch (_) {}
-        clearCart();
-        toast.success('Payment successful!');
-        navigate(`/order-placed/${order._id}`);
-      } else {
-        const { data: order } = await createOrder(buildOrderData());
-        clearCart();
-        navigate(`/order-placed/${order._id}`);
-      }
+      const { data: order } = await createOrder(buildOrderData());
+      clearCart();
+      navigate(`/order-placed/${order._id}`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to place order. Please try again.');
     } finally { setLoading(false); }
@@ -157,9 +189,9 @@ function CheckoutInner() {
       <div className="checkout-layout">
         <div className="checkout-form-col">
 
-          {/* ── Step 0: Shipping ── */}
+          {/* ── Step 0: Shipping + Payment Method ── */}
           {step === 0 && (
-            <form className="checkout-form" onSubmit={(e) => { e.preventDefault(); setStep(1); }}>
+            <form className="checkout-form" onSubmit={handleContinueToPayment}>
               <h2 className="checkout-form-title">Shipping Information</h2>
               <div className="checkout-grid-2">
                 <div>
@@ -182,7 +214,7 @@ function CheckoutInner() {
                 <div>
                   <label>City</label>
                   <input name="city" required value={shippingInfo.city} onChange={handleShipping}
-                    className="checkout-input" placeholder="Toronto" />
+                    className="checkout-input" placeholder="Ottawa" />
                 </div>
                 <div>
                   <label>Province</label>
@@ -232,114 +264,73 @@ function CheckoutInner() {
                 </div>
               </div>
 
-              <button type="submit" className="checkout-submit">Continue to Payment</button>
+              <div style={{ marginTop: '1.25rem' }}>
+                <label style={{ fontWeight: 600, fontSize: '.875rem', display: 'block', marginBottom: '.75rem' }}>
+                  Payment Method
+                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+                  {[
+                    { value: 'card',    label: 'Credit / Debit Card',  sub: 'Visa, Mastercard, Amex — secured by Stripe', Icon: CreditCard },
+                    { value: 'interac', label: 'Interac e-Transfer',   sub: 'Manual bank transfer — instructions after order', Icon: Building2 },
+                  ].map(({ value, label, sub, Icon }) => (
+                    <label key={value} style={{
+                      display: 'flex', alignItems: 'center', gap: '1rem', padding: '.875rem 1rem', cursor: 'pointer',
+                      border: `2px solid ${payMethod === value ? 'var(--gold)' : 'var(--border)'}`,
+                      borderRadius: 'var(--radius-sm)', transition: 'border-color .15s',
+                    }}>
+                      <input type="radio" name="payMethod" value={value}
+                        checked={payMethod === value} onChange={() => setPayMethod(value)}
+                        style={{ accentColor: 'var(--gold)' }} />
+                      <Icon size={18} style={{ color: payMethod === value ? 'var(--gold)' : '#9ca3af', flexShrink: 0 }} />
+                      <div>
+                        <p style={{ fontWeight: 600, fontSize: '.875rem' }}>{label}</p>
+                        <p style={{ fontSize: '.75rem', color: 'var(--text-secondary)' }}>{sub}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <button type="submit" disabled={loading} className="checkout-submit" style={{ marginTop: '1.5rem' }}>
+                {loading ? 'Preparing…' : 'Continue to Payment →'}
+              </button>
             </form>
           )}
 
-          {/* ── Step 1: Payment ── */}
-          {step === 1 && (
-            <form className="checkout-form" onSubmit={handlePaymentContinue}>
-              <h2 className="checkout-form-title">Payment Method</h2>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem', marginBottom: '1.25rem' }}>
-                {[
-                  { value: 'card',    label: 'Credit / Debit Card',  sub: 'Visa, Mastercard, Amex — secured by Stripe', Icon: CreditCard },
-                  { value: 'interac', label: 'Interac e-Transfer',   sub: 'Manual bank transfer — instructions sent after order', Icon: Building2 },
-                ].map(({ value, label, sub, Icon }) => (
-                  <label key={value} style={{
-                    display: 'flex', alignItems: 'center', gap: '1rem', padding: '.875rem 1rem', cursor: 'pointer',
-                    border: `2px solid ${payMethod === value ? 'var(--gold)' : 'var(--border)'}`,
-                    borderRadius: 'var(--radius-sm)', transition: 'border-color .15s',
-                  }}>
-                    <input type="radio" name="payMethod" value={value}
-                      checked={payMethod === value} onChange={() => setPayMethod(value)}
-                      style={{ accentColor: 'var(--gold)' }} />
-                    <Icon size={18} style={{ color: payMethod === value ? 'var(--gold)' : '#9ca3af', flexShrink: 0 }} />
-                    <div>
-                      <p style={{ fontWeight: 600, fontSize: '.875rem' }}>{label}</p>
-                      <p style={{ fontSize: '.75rem', color: 'var(--text-secondary)' }}>{sub}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
-
-              {payMethod === 'card' && (
-                <div style={{ marginBottom: '1rem' }}>
-                  <label style={{ fontWeight: 600, fontSize: '.875rem', display: 'block', marginBottom: '.5rem' }}>
-                    Card Details
-                  </label>
-                  <div className="stripe-card-wrap">
-                    <CardElement options={CARD_OPTS} onChange={(e) => setCardError(e.error?.message || '')} />
-                  </div>
-                  {cardError && <p className="stripe-card-error">{cardError}</p>}
-                  <p className="stripe-card-note">Your card details are never stored on our servers — secured by Stripe.</p>
-                </div>
-              )}
-
-              {payMethod === 'interac' && (
-                <div className="interac-info-box">
-                  <p className="interac-info-title">How it works</p>
-                  <ol className="interac-info-list">
-                    <li>Place your order using the button below</li>
-                    <li>Send <strong>${total.toFixed(2)} CAD</strong> via Interac e-Transfer to <strong>info@franellhair.com</strong></li>
-                    <li>Use your order number as the message / reference</li>
-                    <li>We confirm receipt and ship within 1 business day</li>
-                  </ol>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', gap: '.75rem' }}>
-                <button type="button" onClick={() => setStep(0)} className="checkout-back">Back</button>
-                <button type="submit" disabled={loading} className="checkout-submit">
-                  {loading ? 'Verifying…' : 'Continue to Review →'}
-                </button>
-              </div>
-            </form>
+          {/* ── Step 1: Card — PaymentElement inside its own Elements context ── */}
+          {step === 1 && payMethod === 'card' && clientSecret && (
+            <Elements stripe={stripePromise} options={{ clientSecret, appearance: STRIPE_APPEARANCE }}>
+              <CardPaymentStep
+                onBack={() => { setClientSecret(''); setStep(0); }}
+                orderData={buildOrderData()}
+                shippingEmail={shippingInfo.email}
+                total={total}
+              />
+            </Elements>
           )}
 
-          {/* ── Step 2: Review ── */}
-          {step === 2 && (
+          {/* ── Step 1: Interac ── */}
+          {step === 1 && payMethod === 'interac' && (
             <div className="checkout-form">
-              <h2 className="checkout-form-title">Review Your Order</h2>
-
-              <div style={{ marginBottom: '1.25rem' }}>
-                <p style={{ fontWeight: 600, marginBottom: '.4rem' }}>Shipping to</p>
-                <p style={{ color: '#555', lineHeight: 1.7, fontSize: '.9375rem' }}>
-                  {shippingInfo.fullName}<br />
-                  {shippingInfo.address}, {shippingInfo.city}, {shippingInfo.province} {shippingInfo.postal}<br />
-                  {shippingInfo.country} · {shippingMethod === 'express' ? 'Express (2 days)' : 'Standard (3 days)'}
-                </p>
+              <h2 className="checkout-form-title">Interac e-Transfer</h2>
+              <div className="interac-info-box">
+                <p className="interac-info-title">How to complete your payment</p>
+                <ol className="interac-info-list">
+                  <li>Place your order using the button below</li>
+                  <li>Send <strong>${total.toFixed(2)} CAD</strong> via Interac e-Transfer to <strong>info@franellhair.com</strong></li>
+                  <li>Use your order number as the message / reference</li>
+                  <li>We confirm receipt and ship within 1 business day</li>
+                </ol>
               </div>
-
-              <div style={{ marginBottom: '1.25rem' }}>
-                <p style={{ fontWeight: 600, marginBottom: '.4rem' }}>Payment</p>
-                <p style={{ color: '#555', fontSize: '.9375rem' }}>
-                  {payMethod === 'card' ? '💳  Credit / Debit Card (Stripe)' : '🏦  Interac e-Transfer'}
-                </p>
-              </div>
-
-              {payMethod === 'interac' && (
-                <div className="interac-info-box" style={{ marginBottom: '1.25rem' }}>
-                  <p className="interac-info-title">After placing your order</p>
-                  <p style={{ fontSize: '.875rem', color: '#555', lineHeight: 1.6 }}>
-                    Send <strong>${total.toFixed(2)} CAD</strong> to <strong>info@franellhair.com</strong> via
-                    Interac e-Transfer. Use your order number as the reference. We will confirm and ship within 1 business day.
-                  </p>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', gap: '.75rem' }}>
-                <button onClick={() => setStep(1)} className="checkout-back">Back</button>
-                <button onClick={handlePlaceOrder} disabled={loading} className="checkout-submit">
-                  {loading
-                    ? 'Processing…'
-                    : payMethod === 'card'
-                      ? `Pay $${total.toFixed(2)} CAD`
-                      : `Place Order — $${total.toFixed(2)} CAD`}
+              <div style={{ display: 'flex', gap: '.75rem', marginTop: '1.25rem' }}>
+                <button type="button" onClick={() => setStep(0)} className="checkout-back">Back</button>
+                <button onClick={handleInteracOrder} disabled={loading} className="checkout-submit">
+                  {loading ? 'Placing Order…' : `Place Order — $${total.toFixed(2)} CAD`}
                 </button>
               </div>
             </div>
           )}
+
         </div>
 
         {/* ── Order summary sidebar ── */}
@@ -394,13 +385,5 @@ function CheckoutInner() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function CheckoutPage() {
-  return (
-    <Elements stripe={stripePromise}>
-      <CheckoutInner />
-    </Elements>
   );
 }
