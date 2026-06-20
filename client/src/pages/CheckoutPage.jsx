@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -8,7 +8,8 @@ import { useAuth } from '../context/AuthContext';
 import { createOrder, validatePromo, createPaymentIntent, payOrder } from '../services/api';
 import toast from 'react-hot-toast';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = STRIPE_PK ? loadStripe(STRIPE_PK) : null;
 
 const STRIPE_APPEARANCE = {
   theme: 'stripe',
@@ -26,6 +27,22 @@ function CardPaymentStep({ onBack, orderData, shippingEmail, total }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [peReady, setPeReady] = useState(false);
+  const stripeRef = useRef(stripe);
+  useEffect(() => { stripeRef.current = stripe; }, [stripe]);
+
+  // Detect if Stripe never initialized (missing/wrong publishable key)
+  useEffect(() => {
+    if (!STRIPE_PK) {
+      setError('Stripe publishable key is missing. Add VITE_STRIPE_PUBLISHABLE_KEY to Vercel and redeploy.');
+      return;
+    }
+    const t = setTimeout(() => {
+      if (!stripeRef.current) {
+        setError('Stripe failed to load. Check that VITE_STRIPE_PUBLISHABLE_KEY is correctly set on Vercel and trigger a redeploy.');
+      }
+    }, 6000);
+    return () => clearTimeout(t);
+  }, []);
 
   const handlePay = async () => {
     if (!stripe || !elements) return;
