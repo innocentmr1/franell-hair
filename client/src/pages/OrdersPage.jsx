@@ -223,12 +223,12 @@ export function OrderDetail() {
       .then(({ data }) => {
         setOrder(data);
         if (data.status === 'delivered') {
-          const reviewed    = localStorage.getItem(`reviewed_${data._id}`);
-          const salonShown  = localStorage.getItem(`salon_shown_${data._id}`);
-          if (!reviewed) {
-            setTimeout(() => setShowReview(true), 800);
-          } else if (!salonShown) {
+          const reviewed   = localStorage.getItem(`reviewed_${data._id}`);
+          const salonShown = localStorage.getItem(`salon_shown_${data._id}`);
+          if (!salonShown) {
             setTimeout(() => setShowSalon(true), 800);
+          } else if (!reviewed) {
+            setTimeout(() => setShowReview(true), 800);
           }
         }
       })
@@ -236,11 +236,15 @@ export function OrderDetail() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  const handleSalonClose = () => {
+    setShowSalon(false);
+    if (order && !localStorage.getItem(`reviewed_${order._id}`)) {
+      setTimeout(() => setShowReview(true), 400);
+    }
+  };
+
   const handleReviewClose = () => {
     setShowReview(false);
-    if (order && !localStorage.getItem(`salon_shown_${order._id}`)) {
-      setTimeout(() => setShowSalon(true), 400);
-    }
   };
 
   if (loading) return <div className="page-loading"><div className="spinner" /></div>;
@@ -260,7 +264,7 @@ export function OrderDetail() {
         <ReviewModal order={order} onClose={handleReviewClose} />
       )}
       {showSalon && (
-        <SalonPopup orderId={order._id} onClose={() => setShowSalon(false)} />
+        <SalonPopup orderId={order._id} onClose={handleSalonClose} />
       )}
 
       <div className="order-detail-topbar">
