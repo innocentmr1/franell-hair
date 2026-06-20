@@ -25,6 +25,7 @@ function CardPaymentStep({ onBack, orderData, shippingEmail, total }) {
   const { clearCart } = useCart();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [peReady, setPeReady] = useState(false);
 
   const handlePay = async () => {
     if (!stripe || !elements) return;
@@ -64,11 +65,16 @@ function CardPaymentStep({ onBack, orderData, shippingEmail, total }) {
       <p className="stripe-card-note" style={{ marginBottom: '1.25rem' }}>
         Secured by Stripe — your card details are never stored on our servers.
       </p>
-      <PaymentElement options={{ layout: 'tabs' }} />
+      {!peReady && (
+        <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280', fontSize: '.875rem', border: '1px solid #e5e7eb', borderRadius: '6px', marginBottom: '1rem' }}>
+          Loading card form…
+        </div>
+      )}
+      <PaymentElement options={{ layout: 'tabs' }} onReady={() => setPeReady(true)} />
       {error && <p className="stripe-card-error" style={{ marginTop: '.75rem' }}>{error}</p>}
       <div style={{ display: 'flex', gap: '.75rem', marginTop: '1.5rem' }}>
         <button type="button" onClick={onBack} className="checkout-back">Back</button>
-        <button onClick={handlePay} disabled={loading || !stripe} className="checkout-submit">
+        <button onClick={handlePay} disabled={loading || !stripe || !peReady} className="checkout-submit">
           {loading ? 'Processing…' : `Pay $${total.toFixed(2)} CAD`}
         </button>
       </div>
