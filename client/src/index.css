@@ -296,7 +296,7 @@ input, textarea, select { font-family: inherit; }
 .nav-mobile-search-btn { padding: 0 1rem; color: #9ca3af; display: flex; align-items: center; }
 .nav-mobile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
 .nav-mobile-link {
-  font-size: .75rem; font-weight: 500; color: #9ca3af;
+  font-size: .75rem; font-weight: 500; color: rgba(255,255,255,.85);
   text-transform: uppercase; letter-spacing: .15em; padding: .25rem 0;
   text-decoration: none; transition: color .2s;
 }
@@ -1314,15 +1314,15 @@ input, textarea, select { font-family: inherit; }
 .nav-mobile-static { display: flex; flex-direction: column; gap: .1rem; margin-bottom: .5rem; }
 .nav-mobile-static-link {
   padding: .625rem .5rem; font-size: .9375rem; font-weight: 600;
-  color: #111; text-decoration: none; border-radius: 6px; display: block;
+  color: var(--white); text-decoration: none; border-radius: 6px; display: block;
 }
-.nav-mobile-static-link:hover { background: #f5f5f0; color: var(--gold); }
+.nav-mobile-static-link:hover { background: rgba(255,255,255,.07); color: var(--gold); }
 
 .nav-mobile-cat-toggle {
   display: flex; align-items: center; justify-content: space-between;
   width: 100%; padding: .625rem .5rem; background: none; border: none;
-  font-size: .9375rem; font-weight: 700; color: #111; cursor: pointer;
-  font-family: inherit; border-top: 1px solid #f0ede6; margin-top: .25rem;
+  font-size: .9375rem; font-weight: 700; color: var(--white); cursor: pointer;
+  font-family: inherit; border-top: 1px solid rgba(255,255,255,.1); margin-top: .25rem;
 }
 .nav-mobile-cat-toggle svg { transition: transform .2s; }
 .nav-mobile-cat-toggle svg.flipped { transform: rotate(180deg); }
