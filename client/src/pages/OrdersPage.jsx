@@ -181,7 +181,7 @@ function SalonPopup({ orderId, onClose }) {
           <div className="salon-popup-hd-text">
             <Scissors size={18} className="salon-popup-icon" />
             <div>
-              <p className="salon-popup-title">Your hair is on its way!</p>
+              <p className="salon-popup-title">Your hair has been delivered!</p>
               <p className="salon-popup-sub">Book a professional installation at one of our recommended salons.</p>
             </div>
           </div>
