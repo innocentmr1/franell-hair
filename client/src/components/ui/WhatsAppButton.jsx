@@ -1,5 +1,5 @@
 export default function WhatsAppButton() {
-  const phone = '15551234567'; // replace with real WhatsApp number (no + or spaces)
+  const phone = '17093417527';
   const message = encodeURIComponent('Hi! I have a question about Franell Hair.');
   const href = `https://wa.me/${phone}?text=${message}`;
 
