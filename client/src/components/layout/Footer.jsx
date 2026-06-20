@@ -8,7 +8,6 @@ const HELP_LINKS = [
   { label: 'Contact Us',           to: '/contact' },
 ];
 
-const categories = ['Wigs', 'Bundles', 'Closures', 'Frontals', 'Extensions', 'Accessories'];
 
 export default function Footer() {
   return (
@@ -28,24 +27,13 @@ export default function Footer() {
           <p className="footer-brand-name">Franell</p>
           <p className="footer-brand-sub">Hair</p>
           <p className="footer-brand-desc">
-            Premium 100% Remy human hair wigs, bundles &amp; extensions. Look and feel your best every day.
+            Premium 100% Remy Human Hair, Bundles &amp; Extensions—crafted for a flawless, natural look that helps you feel confident and beautiful every day.
           </p>
           <div className="footer-socials">
             {['IG', 'TK', 'FB'].map((s) => (
               <a key={s} href="#" className="footer-social-btn">{s}</a>
             ))}
           </div>
-        </div>
-
-        <div>
-          <h4 className="footer-col-title">Shop</h4>
-          <ul className="footer-links">
-            {categories.map((cat) => (
-              <li key={cat}>
-                <Link to={`/shop?category=${cat}`} className="footer-link">{cat}</Link>
-              </li>
-            ))}
-          </ul>
         </div>
 
         <div>

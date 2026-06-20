@@ -420,7 +420,7 @@ input, textarea, select { font-family: inherit; }
 .hero { background: var(--black); overflow: hidden; position: relative; min-height: 100vh; display: flex; align-items: center; }
 .hero-bg-overlay {
   position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background: linear-gradient(105deg, rgba(0,0,0,.82) 0%, rgba(0,0,0,.58) 55%, rgba(0,0,0,.25) 100%);
+  background: linear-gradient(105deg, rgba(0,0,0,.72) 0%, rgba(0,0,0,.38) 55%, rgba(0,0,0,.10) 100%);
 }
 .hero-inner {
   max-width: var(--container-max); margin: 0 auto; padding: 4rem var(--container-pad);
@@ -460,7 +460,7 @@ input, textarea, select { font-family: inherit; }
 .hero-slider { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; z-index: 0; }
 .hero-slide {
   position: absolute; inset: 0; width: 100%; height: 100%;
-  background-size: cover; background-position: center top;
+  background-size: cover; background-position: center center;
   opacity: 0; transition: opacity .6s ease;
   pointer-events: none;
 }
@@ -1617,3 +1617,6 @@ input, textarea, select { font-family: inherit; }
 .rev-bar-track { flex: 1; width: 100%; background: #f3f4f6; border-radius: 4px 4px 0 0; display: flex; align-items: flex-end; overflow: hidden; }
 .rev-bar-fill { width: 100%; background: linear-gradient(180deg, var(--gold-light), var(--gold)); border-radius: 4px 4px 0 0; transition: height .4s ease; }
 .rev-bar-month { font-size: .6875rem; color: var(--text-muted); font-weight: 500; }
+
+/* ── Reviews social proof ── */
+.reviews-social-proof { display: flex; flex-direction: column; align-items: center; gap: .25rem; margin-top: 1rem; }

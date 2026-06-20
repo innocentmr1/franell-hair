@@ -74,51 +74,16 @@ export default function HomePage() {
 
           {/* Left */}
           <div>
-            <div className="hero-badge">
-              <span className="hero-badge-dot"></span>
-              <span className="hero-badge-text">New Arrivals 2026</span>
-            </div>
-
             <h1 className="hero-title">
               Hair That<br />
               <span className="hero-title-gold">Speaks</span><br />
               For Itself.
             </h1>
 
-            <p className="hero-desc">
-              Premium 100% Remy human hair wigs, bundles &amp; extensions. Beginner-friendly glueless styles — flawless from day one.
-            </p>
-
             <div className="hero-cta-group">
               <Link to="/shop" className="btn btn-gold">
                 Shop Collection <ArrowRight size={15} />
               </Link>
-              <Link to="/shop?category=Wigs" className="btn btn-outline-white">
-                Browse Wigs
-              </Link>
-            </div>
-
-            <div className="hero-social-proof">
-              <div className="hero-avatars">
-                {avatarColors.map((c, i) => (
-                  <div key={i} className="hero-avatar-ring" style={{ backgroundColor: c }} />
-                ))}
-              </div>
-              <div>
-                <div className="hero-stars-row">
-                  {[1,2,3,4,5].map((i) => (
-                    <Star key={i} size={12} style={{ fill: GOLD, color: GOLD }} />
-                  ))}
-                  <span className="hero-rating-score">
-                    {siteStats.avgRating ?? '5.0'}
-                  </span>
-                </div>
-                <p className="hero-rating-sub">
-                  {siteStats.totalReviews > 0
-                    ? `${siteStats.totalReviews.toLocaleString()}+ happy customers`
-                    : '1,000+ happy customers'}
-                </p>
-              </div>
             </div>
           </div>
 
@@ -162,23 +127,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── PERKS ── */}
-      <div className="perks-strip">
-        <div className="perks-inner">
-          {perks.map(({ icon, title, desc }) => {
-            const Icon = ICON_MAP[icon] || Truck;
-            return (
-              <div key={title} className="perk-item">
-                <div className="perk-icon"><Icon size={16} /></div>
-                <div>
-                  <p className="perk-title">{title}</p>
-                  <p className="perk-desc">{desc}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
       {/* ── CATEGORIES ── */}
       {categories.length > 0 && (
@@ -265,25 +213,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── HAIR TYPES ── */}
-      <section className="section">
-        <div className="section-inner hair-types-center">
-          <div className="section-header">
-            <div>
-              <span className="eyebrow">Textures</span>
-              <h2 className="section-title">Find Your Perfect Match</h2>
-            </div>
-          </div>
-          <div className="hair-types-pills">
-            {hairTypes.map((type) => (
-              <Link key={type} to={`/shop?hairType=${encodeURIComponent(type)}`} className="hair-type-pill">
-                {type}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── TESTIMONIALS — real reviews only ── */}
       {(reviewsLoading || reviews.length > 0) && (
         <section className="section section-cream">
@@ -291,6 +220,26 @@ export default function HomePage() {
             <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
               <span className="eyebrow">Reviews</span>
               <h2 className="section-title">What Our Customers Say</h2>
+              <div className="reviews-social-proof">
+                <div className="hero-avatars" style={{ justifyContent: 'center' }}>
+                  {avatarColors.map((c, i) => (
+                    <div key={i} className="hero-avatar-ring" style={{ backgroundColor: c, borderColor: '#F5F0E8' }} />
+                  ))}
+                </div>
+                <div className="hero-stars-row" style={{ justifyContent: 'center', marginTop: '.5rem' }}>
+                  {[1,2,3,4,5].map((i) => (
+                    <Star key={i} size={14} style={{ fill: GOLD, color: GOLD }} />
+                  ))}
+                  <span style={{ fontSize: '.9375rem', fontWeight: 700, color: 'var(--black)', marginLeft: 6 }}>
+                    {siteStats.avgRating ?? '5.0'}
+                  </span>
+                </div>
+                <p style={{ fontSize: '.875rem', color: 'var(--text-secondary)', marginTop: '.25rem' }}>
+                  {siteStats.totalReviews > 0
+                    ? `${siteStats.totalReviews.toLocaleString()}+ happy customers`
+                    : '1,000+ happy customers'}
+                </p>
+              </div>
             </div>
             <div className="testimonials-grid">
               {reviews.map((r) => (
