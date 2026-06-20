@@ -31,6 +31,7 @@ app.use('/api/hero-slides',  require('./routes/heroSlideRoutes'));
 app.use('/api/subscribers', require('./routes/subscriberRoutes'));
 app.use('/api/promo',       require('./routes/promoRoutes'));
 app.use('/api/saloons',     require('./routes/saloonRoutes'));
+app.use('/api/contact',     require('./routes/contactRoutes'));
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 

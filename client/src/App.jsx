@@ -26,6 +26,7 @@ import AdminSettings    from './pages/admin/AdminSettings';
 import AdminHeroSlides  from './pages/admin/AdminHeroSlides';
 import AdminPromoCodes  from './pages/admin/AdminPromoCodes';
 import AdminSaloons     from './pages/admin/AdminSaloons';
+import AdminMessages    from './pages/admin/AdminMessages';
 import OrderPlacedPage from './pages/OrderPlacedPage';
 import AboutPage    from './pages/AboutPage';
 import ContactPage  from './pages/ContactPage';
@@ -83,6 +84,7 @@ export default function App() {
             <Route path="/admin/hero-slides"   element={<AdminRoute><AdminHeroSlides /></AdminRoute>} />
             <Route path="/admin/promo-codes"   element={<AdminRoute><AdminPromoCodes /></AdminRoute>} />
             <Route path="/admin/saloons"       element={<AdminRoute><AdminSaloons /></AdminRoute>} />
+            <Route path="/admin/messages"      element={<AdminRoute><AdminMessages /></AdminRoute>} />
           </Routes>
           </WishlistProvider>
         </CartProvider>
