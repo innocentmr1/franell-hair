@@ -48,7 +48,7 @@ const FAQS = [
   {
     section: 'Contact & Support',
     items: [
-      { q: 'How can I contact you?', a: 'You can reach us by email at info@franellhair.com, by phone at +1 (709) 341-7527, or through the Contact page on our website. We are based in Ontario, Canada.' },
+      { q: 'How can I contact you?', a: 'You can reach us by email at info@franellhair.com, by phone at +1 (709) 341-7527, or through the Contact page on our website. We are based in Ottawa, ON, Canada.' },
       { q: 'What are your business hours?', a: 'Our team is available Monday to Saturday, 9am–6pm EST. We aim to reply to all messages within 24 hours.' },
     ],
   },

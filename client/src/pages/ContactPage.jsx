@@ -36,7 +36,7 @@ export default function ContactPage() {
           {[
             { icon: Mail,   label: 'Email Us',       value: 'info@franellhair.com' },
             { icon: Phone,  label: 'Call Us',         value: '+1 (709) 341-7527' },
-            { icon: MapPin, label: 'Location',        value: 'Ontario, Canada' },
+            { icon: MapPin, label: 'Location',        value: 'Ottawa, ON, Canada' },
             { icon: Clock,  label: 'Business Hours',  value: 'Mon–Sat 9am – 6pm EST' },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="contact-info-card">
