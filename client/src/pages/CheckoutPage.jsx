@@ -40,7 +40,7 @@ function CardPaymentStep({ onBack, orderData, shippingEmail, total }) {
       if (!stripeRef.current) {
         setError('Stripe failed to load. Check that VITE_STRIPE_PUBLISHABLE_KEY is correctly set on Vercel and trigger a redeploy.');
       }
-    }, 6000);
+    }, 3000);
     return () => clearTimeout(t);
   }, []);
 
@@ -79,16 +79,23 @@ function CardPaymentStep({ onBack, orderData, shippingEmail, total }) {
   return (
     <div className="checkout-form">
       <h2 className="checkout-form-title">Card Details</h2>
-      <p className="stripe-card-note" style={{ marginBottom: '1.25rem' }}>
-        Secured by Stripe — your card details are never stored on our servers.
-      </p>
-      {!peReady && (
-        <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280', fontSize: '.875rem', border: '1px solid #e5e7eb', borderRadius: '6px', marginBottom: '1rem' }}>
-          Loading card form…
+      {error ? (
+        <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '6px', padding: '1rem', marginBottom: '1rem', color: '#dc2626', fontSize: '.875rem', lineHeight: 1.6 }}>
+          <strong>Payment form error:</strong><br />{error}
         </div>
+      ) : (
+        <>
+          <p className="stripe-card-note" style={{ marginBottom: '1.25rem' }}>
+            Secured by Stripe — your card details are never stored on our servers.
+          </p>
+          {!peReady && (
+            <div style={{ padding: '1rem', textAlign: 'center', color: '#6b7280', fontSize: '.875rem', border: '1px solid #e5e7eb', borderRadius: '6px', marginBottom: '1rem' }}>
+              Loading card form…
+            </div>
+          )}
+          <PaymentElement options={{ layout: 'tabs' }} onReady={() => setPeReady(true)} />
+        </>
       )}
-      <PaymentElement options={{ layout: 'tabs' }} onReady={() => setPeReady(true)} />
-      {error && <p className="stripe-card-error" style={{ marginTop: '.75rem' }}>{error}</p>}
       <div style={{ display: 'flex', gap: '.75rem', marginTop: '1.5rem' }}>
         <button type="button" onClick={onBack} className="checkout-back">Back</button>
         <button onClick={handlePay} disabled={loading || !stripe || !peReady} className="checkout-submit">
