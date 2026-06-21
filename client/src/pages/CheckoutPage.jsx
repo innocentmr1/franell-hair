@@ -79,6 +79,9 @@ function CardPaymentStep({ onBack, orderData, shippingEmail, total }) {
   return (
     <div className="checkout-form">
       <h2 className="checkout-form-title">Card Details</h2>
+      <div style={{ background: '#f3f4f6', border: '1px solid #d1d5db', borderRadius: '6px', padding: '.75rem', marginBottom: '1rem', fontSize: '.75rem', color: '#374151', fontFamily: 'monospace' }}>
+        PK: {STRIPE_PK ? `✓ ${STRIPE_PK.slice(0, 20)}…` : '✗ MISSING — add VITE_STRIPE_PUBLISHABLE_KEY to Vercel'}
+      </div>
       {error ? (
         <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '6px', padding: '1rem', marginBottom: '1rem', color: '#dc2626', fontSize: '.875rem', lineHeight: 1.6 }}>
           <strong>Payment form error:</strong><br />{error}
