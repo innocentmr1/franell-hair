@@ -1,23 +1,38 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns').promises;
 
-// Some hosts (e.g. Render) have no outbound IPv6 route, but Node's default DNS
-// order can still hand back an AAAA record for smtp.hostinger.com, causing
-// ENETUNREACH. Force IPv4 resolution for all outbound connections.
-require('dns').setDefaultResultOrder('ipv4first');
-
-let transporter = null;
+// Some hosts (e.g. Render) have no outbound IPv6 route. Node's Happy-Eyeballs
+// connection logic can still pick the AAAA record for smtp.hostinger.com and
+// fail with ENETUNREACH before ever trying IPv4 — setDefaultResultOrder alone
+// doesn't prevent that. So resolve the IPv4 address ourselves and connect to
+// it directly, passing the original hostname as the TLS servername (SNI) so
+// certificate validation still matches.
+let transporterPromise = null;
 const getTransporter = () => {
-  if (!transporter) {
-    const port = Number(process.env.EMAIL_PORT) || 465;
-    transporter = nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || 'smtp.hostinger.com',
-      port,
-      // Port 465 uses implicit TLS; 587 (and others) use STARTTLS instead.
-      secure: process.env.EMAIL_SECURE ? process.env.EMAIL_SECURE === 'true' : port === 465,
-      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-    });
+  if (!transporterPromise) {
+    transporterPromise = (async () => {
+      const hostname = process.env.EMAIL_HOST || 'smtp.hostinger.com';
+      const port = Number(process.env.EMAIL_PORT) || 465;
+      const secure = process.env.EMAIL_SECURE ? process.env.EMAIL_SECURE === 'true' : port === 465;
+
+      let host = hostname;
+      try {
+        const [ipv4] = await dns.resolve4(hostname);
+        if (ipv4) host = ipv4;
+      } catch (err) {
+        console.warn(`Could not resolve IPv4 address for ${hostname}, connecting by hostname instead:`, err.message);
+      }
+
+      return nodemailer.createTransport({
+        host,
+        port,
+        secure,
+        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+        tls: { servername: hostname },
+      });
+    })();
   }
-  return transporter;
+  return transporterPromise;
 };
 
 // Best-effort send: logs and returns rather than throwing, so a broken/missing
@@ -28,7 +43,8 @@ const sendEmail = async ({ to, subject, html }) => {
     return;
   }
   try {
-    await getTransporter().sendMail({
+    const transporter = await getTransporter();
+    await transporter.sendMail({
       from: `"Franell Hair" <${process.env.EMAIL_USER}>`,
       to,
       subject,
