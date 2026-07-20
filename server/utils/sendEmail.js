@@ -1,5 +1,10 @@
 const nodemailer = require('nodemailer');
 
+// Some hosts (e.g. Render) have no outbound IPv6 route, but Node's default DNS
+// order can still hand back an AAAA record for smtp.hostinger.com, causing
+// ENETUNREACH. Force IPv4 resolution for all outbound connections.
+require('dns').setDefaultResultOrder('ipv4first');
+
 let transporter = null;
 const getTransporter = () => {
   if (!transporter) {
