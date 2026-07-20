@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import SEO from '../components/ui/SEO';
 
 const FAQS = [
   {
@@ -70,6 +71,7 @@ function FAQItem({ q, a }) {
 export default function FAQPage() {
   return (
     <div className="faq-page">
+      <SEO title="FAQ" description="Answers to common questions about orders, payments, shipping and returns at Franell Hair." path="/faq" />
       <div className="faq-hero">
         <h1 className="faq-hero-title">Frequently Asked Questions</h1>
         <p className="faq-hero-sub">Everything you need to know about Franell Hair.</p>

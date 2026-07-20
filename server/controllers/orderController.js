@@ -1,14 +1,15 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const sendEmail = require('../utils/sendEmail');
+const { orderConfirmationEmail, orderShippedEmail } = require('../utils/emailTemplates');
 
 const createOrder = async (req, res) => {
-  const { orderItems, shippingAddress, paymentMethod } = req.body;
+  const { orderItems, shippingAddress, shippingMethod, paymentMethod } = req.body;
   if (!orderItems?.length) return res.status(400).json({ message: 'No order items' });
 
   const itemsPrice = orderItems.reduce((acc, i) => acc + i.price * i.qty, 0);
-  const shippingPrice = itemsPrice > 150 ? 0 : 9.99;
-  const taxPrice = +(itemsPrice * 0.08).toFixed(2);
-  const totalPrice = +(itemsPrice + shippingPrice + taxPrice).toFixed(2);
+  const shippingPrice = shippingMethod === 'express' ? 30 : 0;
+  const totalPrice = +(itemsPrice + shippingPrice).toFixed(2);
 
   const order = await Order.create({
     user: req.user._id,
@@ -17,7 +18,6 @@ const createOrder = async (req, res) => {
     paymentMethod,
     itemsPrice,
     shippingPrice,
-    taxPrice,
     totalPrice,
   });
 
@@ -27,6 +27,9 @@ const createOrder = async (req, res) => {
       $inc: { stock: -item.qty, sold: item.qty },
     });
   }
+
+  const { subject, html } = orderConfirmationEmail({ ...order.toObject(), user: req.user });
+  sendEmail({ to: req.user.email, subject, html });
 
   res.status(201).json(order);
 };
@@ -61,12 +64,17 @@ const getAllOrders = async (req, res) => {
 };
 
 const updateOrderStatus = async (req, res) => {
-  const order = await Order.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true });
+  const order = await Order.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true })
+    .populate('user', 'name email preferences');
   if (!order) return res.status(404).json({ message: 'Order not found' });
   if (req.body.status === 'delivered') {
     order.isDelivered = true;
     order.deliveredAt = Date.now();
     await order.save();
+  }
+  if (req.body.status === 'shipped' && order.user?.email && order.user.preferences?.orderUpdates !== false) {
+    const { subject, html } = orderShippedEmail(order);
+    sendEmail({ to: order.user.email, subject, html });
   }
   res.json(order);
 };

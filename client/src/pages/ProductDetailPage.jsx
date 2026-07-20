@@ -6,7 +6,13 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { resolveImg } from '../assets/images';
 import ProductCard from '../components/ui/ProductCard';
+import SEO from '../components/ui/SEO';
 import toast from 'react-hot-toast';
+
+function stripHtml(html = '') {
+  const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  return text.length > 160 ? `${text.slice(0, 157)}…` : text;
+}
 
 function toYouTubeEmbed(url) {
   if (!url) return null;
@@ -203,6 +209,13 @@ export default function ProductDetailPage() {
 
   return (
     <div className="product-detail">
+      <SEO
+        title={product.name}
+        description={stripHtml(product.description) || `${product.name} — 100% Remy human hair, shipped across Canada.`}
+        path={`/product/${id}`}
+        image={product.images?.[0]}
+        type="product"
+      />
       <div className="product-detail-grid">
 
         {/* Gallery */}

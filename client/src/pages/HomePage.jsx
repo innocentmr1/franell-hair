@@ -5,6 +5,7 @@ import { getFeaturedProducts, getTopReviews, getBestseller, getHeroSlides, getCa
 import ProductCard from '../components/ui/ProductCard';
 import HeroSlider from '../components/ui/HeroSlider';
 import { resolveImg } from '../assets/images';
+import SEO from '../components/ui/SEO';
 
 const GOLD = '#C9A84C';
 
@@ -63,6 +64,10 @@ export default function HomePage() {
 
   return (
     <div>
+      <SEO
+        description="Premium 100% Remy human hair, bundles, braids and extensions. Free shipping across Canada, crafted for a flawless, natural look."
+        path="/"
+      />
 
       {/* ── HERO ── */}
       <section className="hero">

@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Truck, RotateCcw, Clock, MapPin } from 'lucide-react';
+import SEO from '../components/ui/SEO';
 
 export default function ShippingPage() {
   return (
     <div className="shipping-page">
+      <SEO title="Shipping & Returns" description="Free shipping across Canada, 10-day hassle-free returns, and everything you need to know about delivery at Franell Hair." path="/shipping" />
       <div className="faq-hero">
         <h1 className="faq-hero-title">Shipping & Returns</h1>
         <p className="faq-hero-sub">Fast, reliable delivery and hassle-free returns.</p>

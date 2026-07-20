@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Mail, Phone, MapPin, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { sendContactMessage } from '../services/api';
+import SEO from '../components/ui/SEO';
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -25,6 +26,7 @@ export default function ContactPage() {
 
   return (
     <div className="contact-page">
+      <SEO title="Contact Us" description="Get in touch with Franell Hair for order questions, shipping info, or product advice." path="/contact" />
       <div className="contact-hero">
         <h1 className="contact-hero-title">Get in Touch</h1>
         <p className="contact-hero-sub">We're here to help with any questions about your order or our products.</p>

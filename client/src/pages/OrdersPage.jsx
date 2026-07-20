@@ -351,9 +351,6 @@ export function OrderDetail() {
                   {order.shippingPrice === 0 ? 'FREE' : `$${order.shippingPrice?.toFixed(2)}`}
                 </span>
               </div>
-              {order.taxPrice > 0 && (
-                <div className="order-price-row"><span>Tax</span><span>${order.taxPrice?.toFixed(2)}</span></div>
-              )}
               <div className="order-price-total"><span>Total</span><span>${order.totalPrice?.toFixed(2)}</span></div>
             </div>
             <p className="order-payment-method">
@@ -368,7 +365,7 @@ export function OrderDetail() {
               <h2 className="order-section-title"><MapPin size={15} /> Delivery Address</h2>
               <div className="order-address-box">
                 <p>{order.shippingAddress.street}</p>
-                <p>{order.shippingAddress.city}{order.shippingAddress.state ? `, ${order.shippingAddress.state}` : ''} {order.shippingAddress.zip}</p>
+                <p>{order.shippingAddress.city}{order.shippingAddress.province ? `, ${order.shippingAddress.province}` : ''} {order.shippingAddress.postal}</p>
                 <p>{order.shippingAddress.country}</p>
               </div>
             </div>

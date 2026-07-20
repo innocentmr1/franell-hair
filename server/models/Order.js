@@ -17,8 +17,8 @@ const orderSchema = new mongoose.Schema(
     shippingAddress: {
       street: String,
       city: String,
-      state: String,
-      zip: String,
+      province: String,
+      postal: String,
       country: String,
     },
     paymentMethod: { type: String, default: 'Stripe' },
@@ -29,7 +29,6 @@ const orderSchema = new mongoose.Schema(
     },
     itemsPrice: { type: Number, default: 0 },
     shippingPrice: { type: Number, default: 0 },
-    taxPrice: { type: Number, default: 0 },
     totalPrice: { type: Number, default: 0 },
     isPaid: { type: Boolean, default: false },
     paidAt: Date,

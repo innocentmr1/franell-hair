@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { getProducts, getCategories } from '../services/api';
 import ProductCard from '../components/ui/ProductCard';
+import SEO from '../components/ui/SEO';
 const SORT_OPTIONS = [
   { value: 'newest',    label: 'Newest' },
   { value: 'price_asc', label: 'Price: Low to High' },
@@ -94,6 +95,11 @@ export default function ShopPage() {
 
   return (
     <div className="shop-page">
+      <SEO
+        title={category || 'Shop'}
+        description="Browse our full range of 100% Remy human hair bundles, braids, locs, twists and wigs. Free shipping across Canada."
+        path="/shop"
+      />
       <div className="shop-header">
         <div>
           <h1 className="shop-title">
