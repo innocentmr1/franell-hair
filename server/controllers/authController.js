@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const sendEmail = require('../utils/sendEmail');
+const { welcomeEmail } = require('../utils/emailTemplates');
 
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -10,6 +12,10 @@ const register = async (req, res) => {
     return res.status(400).json({ message: 'Email already registered' });
 
   const user = await User.create({ name, email, password });
+
+  const { subject, html } = welcomeEmail(user);
+  sendEmail({ to: user.email, subject, html });
+
   res.status(201).json(formatUser(user));
 };
 

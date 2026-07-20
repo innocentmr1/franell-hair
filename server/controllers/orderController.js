@@ -1,7 +1,7 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const sendEmail = require('../utils/sendEmail');
-const { orderConfirmationEmail, orderShippedEmail } = require('../utils/emailTemplates');
+const { orderConfirmationEmail, orderStatusEmail } = require('../utils/emailTemplates');
 
 const createOrder = async (req, res) => {
   const { orderItems, shippingAddress, shippingMethod, paymentMethod } = req.body;
@@ -72,8 +72,8 @@ const updateOrderStatus = async (req, res) => {
     order.deliveredAt = Date.now();
     await order.save();
   }
-  if (req.body.status === 'shipped' && order.user?.email && order.user.preferences?.orderUpdates !== false) {
-    const { subject, html } = orderShippedEmail(order);
+  if (order.user?.email && order.user.preferences?.orderUpdates !== false) {
+    const { subject, html } = orderStatusEmail(order, req.body.status);
     sendEmail({ to: order.user.email, subject, html });
   }
   res.json(order);

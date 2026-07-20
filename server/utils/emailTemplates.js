@@ -66,16 +66,38 @@ const orderConfirmationEmail = (order) => {
   return { subject: `Order Confirmed — #${orderNumber(order)}`, html: wrapper('Order Confirmed', body) };
 };
 
-const orderShippedEmail = (order) => {
+const STATUS_COPY = {
+  pending:    { label: 'Order Pending',     intro: (n) => `Order <strong>#${n}</strong> is now marked as pending.` },
+  processing: { label: 'Order Processing',  intro: (n) => `We're getting order <strong>#${n}</strong> ready for shipment.` },
+  shipped:    { label: 'Order Shipped',     intro: (n) => `Good news — your order <strong>#${n}</strong> is on its way!` },
+  delivered:  { label: 'Order Delivered',   intro: (n) => `Your order <strong>#${n}</strong> has been delivered. Enjoy your new hair!` },
+  cancelled:  { label: 'Order Cancelled',   intro: (n) => `Order <strong>#${n}</strong> has been cancelled. If this is unexpected, just reply to this email.` },
+};
+
+const orderStatusEmail = (order, status) => {
+  const copy = STATUS_COPY[status] || STATUS_COPY.processing;
+  const n = orderNumber(order);
   const body = `
     <p>Hi ${order.user?.name || 'there'},</p>
-    <p>Good news — your order <strong>#${orderNumber(order)}</strong> is on its way!</p>
+    <p>${copy.intro(n)}</p>
     <table style="width:100%;border-collapse:collapse;margin:20px 0;">${itemsRows(order)}</table>
     <h2 style="font-size:15px;margin:24px 0 6px;">Shipping to</h2>
     <p style="font-size:14px;color:#444;">${addressBlock(order)}</p>
   `;
 
-  return { subject: `Your order has shipped — #${orderNumber(order)}`, html: wrapper('Order Shipped', body) };
+  return { subject: `${copy.label} — #${n}`, html: wrapper(copy.label, body) };
 };
 
-module.exports = { orderConfirmationEmail, orderShippedEmail };
+const welcomeEmail = (user) => {
+  const body = `
+    <p>Hi ${user.name},</p>
+    <p>Welcome to Franell Hair! Your account is ready — browse our 100% Remy human hair bundles, wigs, braids and more, all shipped across Canada.</p>
+    <p style="margin-top:20px;">
+      <a href="https://www.franellhair.com/shop" style="background:${GOLD};color:#111;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Start Shopping</a>
+    </p>
+  `;
+
+  return { subject: 'Welcome to Franell Hair', html: wrapper('Welcome!', body) };
+};
+
+module.exports = { orderConfirmationEmail, orderStatusEmail, welcomeEmail };
