@@ -1,12 +1,24 @@
 require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
+const helmet  = require('helmet');
 const path    = require('path');
 const connectDB = require('./config/db');
 const sanitize = require('./middleware/sanitize');
+const { apiLimiter } = require('./middleware/rateLimit');
 
 const app = express();
 connectDB();
+
+// Render (and most PaaS hosts) sit behind a reverse proxy — without this,
+// express-rate-limit sees every request as coming from the proxy's IP and
+// either rate-limits all users as one bucket or can't identify clients at all.
+app.set('trust proxy', 1);
+
+// Cross-origin resource policy defaults to same-origin, which would block the
+// Vercel-hosted frontend (a different origin) from loading hero/category
+// images served from this API's /uploads path.
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
 const allowedOrigins = process.env.CLIENT_URL
   ? process.env.CLIENT_URL.split(',').map((s) => s.trim().replace(/\/$/, ''))
@@ -20,6 +32,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(sanitize);
+app.use('/api', apiLimiter);
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use('/api/auth',     require('./routes/authRoutes'));

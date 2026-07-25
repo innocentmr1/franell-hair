@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const sanitizeDescription = require('../utils/sanitizeDescription');
 
 const getProducts = async (req, res) => {
   const { category, hairType, minPrice, maxPrice, search, sort, page = 1, limit = 12 } = req.query;
@@ -40,12 +41,16 @@ const getProduct = async (req, res) => {
 };
 
 const createProduct = async (req, res) => {
-  const product = await Product.create(req.body);
+  const data = { ...req.body };
+  if (data.description) data.description = sanitizeDescription(data.description);
+  const product = await Product.create(data);
   res.status(201).json(product);
 };
 
 const updateProduct = async (req, res) => {
-  const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const data = { ...req.body };
+  if (data.description) data.description = sanitizeDescription(data.description);
+  const product = await Product.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
   if (!product) return res.status(404).json({ message: 'Product not found' });
   res.json(product);
 };
