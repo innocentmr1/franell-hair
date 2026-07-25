@@ -19,7 +19,7 @@ const STRIPE_APPEARANCE = {
 const STEPS = ['Shipping', 'Payment'];
 
 // Must be rendered inside <Elements> so useStripe/useElements work
-function CardPaymentStep({ onBack, orderData, shippingEmail, total }) {
+function CardPaymentStep({ onBack, orderData, total }) {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
@@ -60,13 +60,10 @@ function CardPaymentStep({ onBack, orderData, shippingEmail, total }) {
     try {
       const { data: order } = await createOrder(orderData);
       try {
-        await payOrder(order._id, {
-          id: paymentIntent.id,
-          status: paymentIntent.status,
-          update_time: new Date().toISOString(),
-          email_address: shippingEmail,
-        });
-      } catch (_) {}
+        await payOrder(order._id, { paymentIntentId: paymentIntent.id });
+      } catch (err) {
+        console.error('payOrder verification failed:', err.response?.data?.message || err.message);
+      }
       clearCart();
       toast.success('Payment successful!');
       navigate(`/order-placed/${order._id}`);
@@ -150,10 +147,14 @@ export default function CheckoutPage() {
     if (payMethod === 'card') {
       setLoading(true);
       try {
-        const { data } = await createPaymentIntent(total);
+        const { data } = await createPaymentIntent({
+          orderItems: cartItems.map((i) => ({ product: i.product, qty: i.qty, length: i.length, color: i.color })),
+          shippingMethod,
+          promoCode: promoApplied?.code,
+        });
         setClientSecret(data.clientSecret);
-      } catch {
-        toast.error('Could not initialize payment. Please try again.');
+      } catch (err) {
+        toast.error(err.response?.data?.message || 'Could not initialize payment. Please try again.');
         setLoading(false);
         return;
       }
@@ -174,6 +175,7 @@ export default function CheckoutPage() {
     },
     shippingMethod,
     paymentMethod: payMethod === 'card' ? 'Card' : 'Interac e-Transfer',
+    promoCode: promoApplied?.code,
   });
 
   const handleInteracOrder = async () => {
@@ -333,7 +335,6 @@ export default function CheckoutPage() {
               <CardPaymentStep
                 onBack={() => { setClientSecret(''); setStep(0); }}
                 orderData={buildOrderData()}
-                shippingEmail={shippingInfo.email}
                 total={total}
               />
             </Elements>

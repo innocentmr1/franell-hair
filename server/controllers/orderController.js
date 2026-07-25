@@ -1,28 +1,34 @@
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const sendEmail = require('../utils/sendEmail');
 const { orderConfirmationEmail, orderStatusEmail } = require('../utils/emailTemplates');
+const { computeOrderPricing } = require('../utils/pricing');
 
 const createOrder = async (req, res) => {
-  const { orderItems, shippingAddress, shippingMethod, paymentMethod } = req.body;
-  if (!orderItems?.length) return res.status(400).json({ message: 'No order items' });
+  const { orderItems, shippingAddress, shippingMethod, paymentMethod, promoCode } = req.body;
 
-  const itemsPrice = orderItems.reduce((acc, i) => acc + i.price * i.qty, 0);
-  const shippingPrice = shippingMethod === 'express' ? 30 : 0;
-  const totalPrice = +(itemsPrice + shippingPrice).toFixed(2);
+  let pricing;
+  try {
+    pricing = await computeOrderPricing({ orderItems, shippingMethod, promoCode });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+  const { orderItems: verifiedItems, itemsPrice, shippingPrice, discount, totalPrice } = pricing;
 
   const order = await Order.create({
     user: req.user._id,
-    orderItems,
+    orderItems: verifiedItems,
     shippingAddress,
     paymentMethod,
     itemsPrice,
     shippingPrice,
+    discount,
     totalPrice,
   });
 
   // Update stock
-  for (const item of orderItems) {
+  for (const item of verifiedItems) {
     await Product.findByIdAndUpdate(item.product, {
       $inc: { stock: -item.qty, sold: item.qty },
     });
@@ -50,10 +56,40 @@ const getOrderById = async (req, res) => {
 const payOrder = async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) return res.status(404).json({ message: 'Order not found' });
+  if (order.user.toString() !== req.user._id.toString() && !req.user.isAdmin)
+    return res.status(403).json({ message: 'Not authorized' });
+  if (order.isPaid) return res.json(order); // idempotent
+
+  const { paymentIntentId } = req.body;
+  if (!paymentIntentId) return res.status(400).json({ message: 'Missing payment reference' });
+
+  // A given Stripe payment can only ever settle one order
+  const alreadyUsed = await Order.findOne({ 'paymentResult.id': paymentIntentId });
+  if (alreadyUsed) return res.status(400).json({ message: 'Payment already applied to another order' });
+
+  let paymentIntent;
+  try {
+    paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+  } catch (err) {
+    return res.status(400).json({ message: 'Could not verify payment with Stripe' });
+  }
+
+  if (paymentIntent.status !== 'succeeded') {
+    return res.status(400).json({ message: 'Payment has not succeeded' });
+  }
+  const expectedCents = Math.round(order.totalPrice * 100);
+  if (paymentIntent.amount !== expectedCents || paymentIntent.currency !== 'cad') {
+    return res.status(400).json({ message: 'Payment amount does not match order total' });
+  }
+
   order.isPaid = true;
   order.paidAt = Date.now();
   order.status = 'processing';
-  order.paymentResult = req.body;
+  order.paymentResult = {
+    id: paymentIntent.id,
+    status: paymentIntent.status,
+    email: req.user.email,
+  };
   await order.save();
   res.json(order);
 };

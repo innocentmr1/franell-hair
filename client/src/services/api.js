@@ -32,7 +32,7 @@ export const getOrder = (id) => api.get(`/orders/${id}`);
 export const payOrder = (id, data) => api.put(`/orders/${id}/pay`, data);
 
 // Payment
-export const createPaymentIntent = (amount) => api.post('/payment/create-payment-intent', { amount });
+export const createPaymentIntent = (data) => api.post('/payment/create-payment-intent', data);
 
 // Admin
 export const getAdminStats          = ()              => api.get('/admin/stats');
