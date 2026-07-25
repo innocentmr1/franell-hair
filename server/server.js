@@ -3,6 +3,7 @@ const express = require('express');
 const cors    = require('cors');
 const path    = require('path');
 const connectDB = require('./config/db');
+const sanitize = require('./middleware/sanitize');
 
 const app = express();
 connectDB();
@@ -18,6 +19,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+app.use(sanitize);
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use('/api/auth',     require('./routes/authRoutes'));
