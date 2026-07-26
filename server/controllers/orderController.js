@@ -1,6 +1,7 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const Saloon = require('../models/Saloon');
 const sendEmail = require('../utils/sendEmail');
 const { orderConfirmationEmail, orderStatusEmail } = require('../utils/emailTemplates');
 const { computeOrderPricing } = require('../utils/pricing');
@@ -109,7 +110,9 @@ const updateOrderStatus = async (req, res) => {
     await order.save();
   }
   if (order.user?.email && order.user.preferences?.orderUpdates !== false) {
-    const { subject, html } = orderStatusEmail(order, req.body.status);
+    const needsSaloons = req.body.status === 'shipped' || req.body.status === 'delivered';
+    const saloons = needsSaloons ? await Saloon.find({ active: true }).sort('name').limit(3) : [];
+    const { subject, html } = orderStatusEmail(order, req.body.status, saloons);
     sendEmail({ to: order.user.email, subject, html });
   }
   res.json(order);

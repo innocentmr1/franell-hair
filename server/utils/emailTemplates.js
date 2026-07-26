@@ -66,6 +66,29 @@ const orderConfirmationEmail = (order) => {
   return { subject: `Order Confirmed — #${orderNumber(order)}`, html: wrapper('Order Confirmed', body) };
 };
 
+const saloonSection = (saloons) => {
+  if (!saloons?.length) return '';
+  const rows = saloons
+    .slice(0, 3)
+    .map(
+      (s) => `
+        <tr>
+          <td style="padding:10px 0;border-bottom:1px solid #eee;">
+            <div style="font-weight:600;color:#111;">${s.name}</div>
+            <div style="font-size:13px;color:#777;">${s.address}</div>
+            ${s.phone ? `<div style="font-size:13px;color:#777;">${s.phone}</div>` : ''}
+          </td>
+        </tr>`
+    )
+    .join('');
+
+  return `
+    <h2 style="font-size:15px;margin:28px 0 6px;">Need help installing?</h2>
+    <p style="font-size:13px;color:#777;margin:0 0 10px;">Get your Franell Hair installed by a professional stylist.</p>
+    <table style="width:100%;border-collapse:collapse;">${rows}</table>
+  `;
+};
+
 const STATUS_COPY = {
   pending:    { label: 'Order Pending',     intro: (n) => `Order <strong>#${n}</strong> is now marked as pending.` },
   processing: { label: 'Order Processing',  intro: (n) => `We're getting order <strong>#${n}</strong> ready for shipment.` },
@@ -74,15 +97,17 @@ const STATUS_COPY = {
   cancelled:  { label: 'Order Cancelled',   intro: (n) => `Order <strong>#${n}</strong> has been cancelled. If this is unexpected, just reply to this email.` },
 };
 
-const orderStatusEmail = (order, status) => {
+const orderStatusEmail = (order, status, saloons = []) => {
   const copy = STATUS_COPY[status] || STATUS_COPY.processing;
   const n = orderNumber(order);
+  const showSaloons = (status === 'shipped' || status === 'delivered') && saloons.length > 0;
   const body = `
     <p>Hi ${order.user?.name || 'there'},</p>
     <p>${copy.intro(n)}</p>
     <table style="width:100%;border-collapse:collapse;margin:20px 0;">${itemsRows(order)}</table>
     <h2 style="font-size:15px;margin:24px 0 6px;">Shipping to</h2>
     <p style="font-size:14px;color:#444;">${addressBlock(order)}</p>
+    ${showSaloons ? saloonSection(saloons) : ''}
   `;
 
   return { subject: `${copy.label} — #${n}`, html: wrapper(copy.label, body) };
