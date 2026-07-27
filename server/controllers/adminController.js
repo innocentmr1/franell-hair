@@ -1,6 +1,8 @@
 const User    = require('../models/User');
 const Product = require('../models/Product');
 const Order   = require('../models/Order');
+const AuditLog = require('../models/AuditLog');
+const logAdminAction = require('../utils/auditLog');
 
 const getStats = async (req, res) => {
   const [totalOrders, totalProducts, totalUsers, revenueAgg, recentOrders, topProducts, monthlyRevenue] =
@@ -43,7 +45,13 @@ const deleteUser = async (req, res) => {
   if (!user) return res.status(404).json({ message: 'User not found' });
   if (user.isAdmin) return res.status(400).json({ message: 'Cannot delete admin user' });
   await user.deleteOne();
+  logAdminAction(req, 'user.delete', user.email, { userId: user._id });
   res.json({ message: 'User removed' });
 };
 
-module.exports = { getStats, getUsers, deleteUser };
+const getAuditLog = async (req, res) => {
+  const logs = await AuditLog.find().sort('-createdAt').limit(200);
+  res.json(logs);
+};
+
+module.exports = { getStats, getUsers, deleteUser, getAuditLog };

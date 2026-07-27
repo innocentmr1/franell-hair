@@ -1,5 +1,6 @@
 const Product = require('../models/Product');
 const sanitizeDescription = require('../utils/sanitizeDescription');
+const logAdminAction = require('../utils/auditLog');
 
 const getProducts = async (req, res) => {
   const { category, hairType, minPrice, maxPrice, search, sort, page = 1, limit = 12 } = req.query;
@@ -44,19 +45,28 @@ const createProduct = async (req, res) => {
   const data = { ...req.body };
   if (data.description) data.description = sanitizeDescription(data.description);
   const product = await Product.create(data);
+  logAdminAction(req, 'product.create', product.name, { productId: product._id, price: product.price, stock: product.stock });
   res.status(201).json(product);
 };
 
 const updateProduct = async (req, res) => {
   const data = { ...req.body };
   if (data.description) data.description = sanitizeDescription(data.description);
+  const before = await Product.findById(req.params.id).select('name price stock');
   const product = await Product.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
   if (!product) return res.status(404).json({ message: 'Product not found' });
+  logAdminAction(req, 'product.update', product.name, {
+    productId: product._id,
+    price: { from: before?.price, to: product.price },
+    stock: { from: before?.stock, to: product.stock },
+  });
   res.json(product);
 };
 
 const deleteProduct = async (req, res) => {
+  const product = await Product.findById(req.params.id).select('name');
   await Product.findByIdAndDelete(req.params.id);
+  logAdminAction(req, 'product.delete', product?.name, { productId: req.params.id });
   res.json({ message: 'Product removed' });
 };
 

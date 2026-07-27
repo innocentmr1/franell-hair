@@ -1,0 +1,17 @@
+name: Send review reminder emails
+
+on:
+  schedule:
+    # 2 PM UTC daily. This ping also wakes Render's free-tier backend up if
+    # it's gone to sleep from inactivity, so the check always runs on time.
+    - cron: '0 14 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call review-reminders endpoint
+        run: |
+          curl -sf -X POST https://franell-hair.onrender.com/api/orders/send-review-reminders \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}"

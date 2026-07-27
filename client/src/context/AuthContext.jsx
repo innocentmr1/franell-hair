@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from 'react';
-import { login as apiLogin, register as apiRegister } from '../services/api';
+import { login as apiLogin, register as apiRegister, resetPassword as apiResetPassword } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -20,6 +20,13 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const resetPassword = async (token, password) => {
+    const { data } = await apiResetPassword(token, password);
+    localStorage.setItem('franellUser', JSON.stringify(data));
+    setUser(data);
+    return data;
+  };
+
   const updateUser = (data) => {
     const merged = { ...JSON.parse(localStorage.getItem('franellUser') || '{}'), ...data };
     localStorage.setItem('franellUser', JSON.stringify(merged));
@@ -32,7 +39,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, login, register, resetPassword, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

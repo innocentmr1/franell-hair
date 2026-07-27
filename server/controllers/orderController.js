@@ -3,8 +3,9 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Saloon = require('../models/Saloon');
 const sendEmail = require('../utils/sendEmail');
-const { orderConfirmationEmail, orderStatusEmail } = require('../utils/emailTemplates');
+const { orderConfirmationEmail, orderStatusEmail, reviewReminderEmail } = require('../utils/emailTemplates');
 const { computeOrderPricing } = require('../utils/pricing');
+const logAdminAction = require('../utils/auditLog');
 
 const createOrder = async (req, res) => {
   const { orderItems, shippingAddress, shippingMethod, paymentMethod, promoCode } = req.body;
@@ -115,7 +116,38 @@ const updateOrderStatus = async (req, res) => {
     const { subject, html } = orderStatusEmail(order, req.body.status, saloons);
     sendEmail({ to: order.user.email, subject, html });
   }
+  logAdminAction(req, 'order.statusChange', `#${order._id.toString().slice(-8).toUpperCase()}`, { orderId: order._id, status: req.body.status });
   res.json(order);
 };
 
-module.exports = { createOrder, getMyOrders, getOrderById, payOrder, getAllOrders, updateOrderStatus };
+const REVIEW_REMINDER_DELAY_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+
+// Called by an external scheduler (not a logged-in user), authenticated via
+// a shared secret header rather than the normal JWT flow.
+const sendReviewReminders = async (req, res) => {
+  if (req.headers['x-cron-secret'] !== process.env.CRON_SECRET || !process.env.CRON_SECRET) {
+    return res.status(401).json({ message: 'Not authorized' });
+  }
+
+  const cutoff = new Date(Date.now() - REVIEW_REMINDER_DELAY_MS);
+  const orders = await Order.find({
+    status: 'delivered',
+    deliveredAt: { $lte: cutoff },
+    reviewReminderSentAt: null,
+  }).populate('user', 'name email preferences');
+
+  let sent = 0;
+  for (const order of orders) {
+    if (order.user?.email && order.user.preferences?.orderUpdates !== false) {
+      const { subject, html } = reviewReminderEmail(order);
+      sendEmail({ to: order.user.email, subject, html });
+      sent += 1;
+    }
+    order.reviewReminderSentAt = new Date();
+    await order.save();
+  }
+
+  res.json({ checked: orders.length, sent });
+};
+
+module.exports = { createOrder, getMyOrders, getOrderById, payOrder, getAllOrders, updateOrderStatus, sendReviewReminders };

@@ -125,4 +125,43 @@ const welcomeEmail = (user) => {
   return { subject: 'Welcome to Franell Hair', html: wrapper('Welcome!', body) };
 };
 
-module.exports = { orderConfirmationEmail, orderStatusEmail, welcomeEmail };
+const reviewReminderEmail = (order) => {
+  const productRows = order.orderItems
+    .map(
+      (item) => `
+        <tr>
+          <td style="padding:12px 0;border-bottom:1px solid #eee;">
+            <div style="font-weight:600;color:#111;margin-bottom:6px;">${item.name}</div>
+            <a href="https://www.franellhair.com/product/${item.product}#review-form"
+               style="background:${GOLD};color:#111;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:600;font-size:13px;display:inline-block;">
+              Leave a Review
+            </a>
+          </td>
+        </tr>`
+    )
+    .join('');
+
+  const body = `
+    <p>Hi ${order.user?.name || 'there'},</p>
+    <p>Your order <strong>#${orderNumber(order)}</strong> was delivered a few days ago — we hope you're loving your new hair!</p>
+    <p>Would you mind leaving a quick review? It helps other customers a lot, and only takes a minute.</p>
+    <table style="width:100%;border-collapse:collapse;margin:20px 0;">${productRows}</table>
+  `;
+
+  return { subject: 'How was your Franell Hair order?', html: wrapper('Enjoying Your Order?', body) };
+};
+
+const passwordResetEmail = (user, resetUrl) => {
+  const body = `
+    <p>Hi ${user.name},</p>
+    <p>We received a request to reset your Franell Hair password. Click below to choose a new one — this link expires in 1 hour.</p>
+    <p style="margin-top:20px;">
+      <a href="${resetUrl}" style="background:${GOLD};color:#111;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Reset Password</a>
+    </p>
+    <p style="font-size:13px;color:#777;margin-top:20px;">If you didn't request this, you can safely ignore this email — your password won't change.</p>
+  `;
+
+  return { subject: 'Reset your Franell Hair password', html: wrapper('Password Reset', body) };
+};
+
+module.exports = { orderConfirmationEmail, orderStatusEmail, welcomeEmail, passwordResetEmail, reviewReminderEmail };

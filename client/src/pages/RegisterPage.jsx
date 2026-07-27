@@ -11,11 +11,12 @@ const perks = [
   'Free shipping rewards',
 ];
 
+const STRONG_PW = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
 function getStrength(p) {
   if (!p) return null;
-  if (p.length < 6) return { label: 'Too short', cls: 's1' };
-  if (p.length < 8) return { label: 'Weak',      cls: 's2' };
-  if (!/[A-Z]/.test(p) || !/[0-9]/.test(p)) return { label: 'Fair', cls: 's3' };
+  if (p.length < 8) return { label: 'Too short', cls: 's1' };
+  if (!/[A-Z]/.test(p) || !/[a-z]/.test(p) || !/[0-9]/.test(p)) return { label: 'Fair', cls: 's3' };
   return { label: 'Strong', cls: 's4' };
 }
 
@@ -33,7 +34,8 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password !== form.confirm) return toast.error('Passwords do not match');
-    if (form.password.length < 6) return toast.error('Password must be at least 6 characters');
+    if (!STRONG_PW.test(form.password))
+      return toast.error('Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a number.');
     setLoading(true);
     try {
       await register(form.name, form.email, form.password);
@@ -130,7 +132,7 @@ export default function RegisterPage() {
               <div className="input-wrap">
                 <input
                   type={showPassword ? 'text' : 'password'} name="password" required
-                  value={form.password} onChange={handleChange} placeholder="Min. 6 characters"
+                  value={form.password} onChange={handleChange} placeholder="Min. 8 characters"
                   className="form-input" style={{ paddingRight: '2.75rem' }}
                 />
                 <button type="button" className="input-eye" onClick={() => setShowPassword(!showPassword)}>

@@ -13,6 +13,8 @@ import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import ProfilePage from './pages/ProfilePage';
 import OrderList, { OrderDetail } from './pages/OrdersPage';
 import WishlistPage from './pages/WishlistPage';
@@ -60,6 +62,8 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
             <Route path="/" element={<Layout><HomePage /></Layout>} />
             <Route path="/shop" element={<Layout><ShopPage /></Layout>} />
             <Route path="/product/:id" element={<Layout><ProductDetailPage /></Layout>} />

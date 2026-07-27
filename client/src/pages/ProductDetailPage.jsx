@@ -406,7 +406,7 @@ export default function ProductDetailPage() {
             ))}
           </div>
 
-          <form onSubmit={handleReview} className="review-form">
+          <form id="review-form" onSubmit={handleReview} className="review-form">
             <h3 className="review-form-title">Leave a Review</h3>
             <div>
               <label className="review-form-label">Rating</label>

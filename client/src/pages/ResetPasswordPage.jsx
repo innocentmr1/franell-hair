@@ -1,29 +1,38 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Eye, EyeOff, ArrowRight, Star } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const GOLD = '#C9A84C';
+const STRONG_PW = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
+export default function ResetPasswordPage() {
+  const { token } = useParams();
   const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { resetPassword } = useAuth();
   const navigate = useNavigate();
-  const { state } = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!STRONG_PW.test(password)) {
+      toast.error('Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a number.');
+      return;
+    }
+    if (password !== confirm) {
+      toast.error('Passwords do not match');
+      return;
+    }
     setLoading(true);
     try {
-      await login(email, password);
-      toast.success('Welcome back!');
-      navigate(state?.from || '/');
+      await resetPassword(token, password);
+      toast.success('Password updated! You are now signed in.');
+      navigate('/');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Invalid email or password');
+      toast.error(err.response?.data?.message || 'This reset link is invalid or has expired.');
     } finally {
       setLoading(false);
     }
@@ -45,11 +54,11 @@ export default function LoginPage() {
         <div className="auth-left-content">
           <div className="auth-left-line" />
           <h2 className="auth-left-heading">
-            Welcome<br />back to<br />
-            <span className="auth-left-heading-gold">your glow.</span>
+            Choose a<br />
+            <span className="auth-left-heading-gold">new password.</span>
           </h2>
           <p className="auth-left-desc">
-            Sign in to track orders, save favourites, and unlock exclusive member deals.
+            Pick something strong you haven't used before.
           </p>
 
           <div className="auth-testimonial">
@@ -82,28 +91,14 @@ export default function LoginPage() {
         </Link>
 
         <div className="auth-form-container">
-          <h1 className="auth-form-heading">Sign In</h1>
+          <h1 className="auth-form-heading">Set New Password</h1>
           <p className="auth-form-subtitle">
-            No account?{' '}
-            <Link to="/register">Create one free</Link>
+            At least 8 characters, with an uppercase letter, a lowercase letter, and a number.
           </p>
 
           <form onSubmit={handleSubmit} className="auth-form">
             <div>
-              <label className="form-label">Email Address</label>
-              <input
-                type="email" required value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="form-input"
-              />
-            </div>
-
-            <div>
-              <div className="auth-pw-header">
-                <label className="form-label" style={{ marginBottom: 0 }}>Password</label>
-                <Link to="/forgot-password" className="auth-forgot">Forgot?</Link>
-              </div>
+              <label className="form-label">New Password</label>
               <div className="input-wrap">
                 <input
                   type={showPassword ? 'text' : 'password'} required value={password}
@@ -118,22 +113,27 @@ export default function LoginPage() {
               </div>
             </div>
 
+            <div>
+              <label className="form-label">Confirm Password</label>
+              <input
+                type={showPassword ? 'text' : 'password'} required value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                placeholder="••••••••"
+                className="form-input"
+              />
+            </div>
+
             <button type="submit" disabled={loading} className="auth-submit">
               {loading ? (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span className="spinner" />
-                  Signing in...
+                  Updating...
                 </span>
               ) : (
-                <>Sign In <ArrowRight size={14} /></>
+                <>Update Password <ArrowRight size={14} /></>
               )}
             </button>
           </form>
-
-          <p className="auth-terms">
-            By signing in you agree to our{' '}
-            <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a>.
-          </p>
         </div>
       </div>
     </div>
