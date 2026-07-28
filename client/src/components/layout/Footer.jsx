@@ -58,6 +58,7 @@ export default function Footer() {
       <div className="footer-bottom">
         <div className="footer-bottom-inner">
           <p>© {new Date().getFullYear()} Franell Hair. All rights reserved.</p>
+          <p>All prices shown in Canadian Dollars (CAD)</p>
           <p>Secure payments by <span style={{ color: '#9ca3af' }}>Stripe</span></p>
         </div>
       </div>

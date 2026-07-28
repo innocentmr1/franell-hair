@@ -3,9 +3,11 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Saloon = require('../models/Saloon');
 const sendEmail = require('../utils/sendEmail');
-const { orderConfirmationEmail, orderStatusEmail, reviewReminderEmail } = require('../utils/emailTemplates');
+const { orderConfirmationEmail, orderStatusEmail, reviewReminderEmail, adminNewOrderEmail } = require('../utils/emailTemplates');
 const { computeOrderPricing } = require('../utils/pricing');
 const logAdminAction = require('../utils/auditLog');
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'info@franellhair.com';
 
 const createOrder = async (req, res) => {
   const { orderItems, shippingAddress, shippingMethod, paymentMethod, promoCode } = req.body;
@@ -38,6 +40,9 @@ const createOrder = async (req, res) => {
 
   const { subject, html } = orderConfirmationEmail({ ...order.toObject(), user: req.user });
   sendEmail({ to: req.user.email, subject, html });
+
+  const { subject: adminSubject, html: adminHtml } = adminNewOrderEmail({ ...order.toObject(), user: req.user });
+  sendEmail({ to: ADMIN_EMAIL, subject: adminSubject, html: adminHtml });
 
   res.status(201).json(order);
 };

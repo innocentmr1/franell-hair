@@ -351,7 +351,7 @@ export function OrderDetail() {
                   {order.shippingPrice === 0 ? 'FREE' : `$${order.shippingPrice?.toFixed(2)}`}
                 </span>
               </div>
-              <div className="order-price-total"><span>Total</span><span>${order.totalPrice?.toFixed(2)}</span></div>
+              <div className="order-price-total"><span>Total (CAD)</span><span>${order.totalPrice?.toFixed(2)}</span></div>
             </div>
             <p className="order-payment-method">
               Paid by {order.paymentMethod}

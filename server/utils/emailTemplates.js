@@ -1,5 +1,11 @@
 const GOLD = '#C9A84C';
 
+// Admin notification templates embed raw customer-submitted free text (contact
+// form messages, names) — escape it so HTML/links can't be injected into the
+// admin's inbox.
+const escapeHtml = (str) =>
+  String(str ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
 const orderNumber = (order) => order._id.toString().slice(-8).toUpperCase();
 
 const formatDate = (date) =>
@@ -276,6 +282,60 @@ const mfaOtpEmail = (user, otp) => {
   return { subject: 'Your Franell Hair Admin Sign-In Code', html: wrapper('Admin Sign-In Verification', body) };
 };
 
+const adminNewOrderEmail = (order) => {
+  const body = `
+    <p>A new order has been placed on Franell Hair.</p>
+    <table style="width:100%;font-size:14px;margin:16px 0;">
+      <tr><td style="color:#777;">Order Number</td><td style="text-align:right;font-weight:600;">#${orderNumber(order)}</td></tr>
+      <tr><td style="color:#777;">Customer</td><td style="text-align:right;">${escapeHtml(order.user?.name) || 'N/A'} (${escapeHtml(order.user?.email) || 'N/A'})</td></tr>
+      <tr><td style="color:#777;">Payment Method</td><td style="text-align:right;">${order.paymentMethod}</td></tr>
+    </table>
+    <h2 style="font-size:15px;margin:24px 0 6px;">Items Ordered</h2>
+    <table style="width:100%;border-collapse:collapse;margin:8px 0 20px;">${itemsRows(order)}</table>
+    <table style="width:100%;font-size:14px;">
+      <tr style="font-weight:700;font-size:16px;"><td>Total (CAD)</td><td style="text-align:right;">$${order.totalPrice.toFixed(2)}</td></tr>
+    </table>
+    <h2 style="font-size:15px;margin:24px 0 6px;">Shipping To</h2>
+    <p style="font-size:14px;color:#444;">${addressBlock(order)}</p>
+    <p style="margin-top:20px;">
+      <a href="https://www.franellhair.com/admin/orders" style="background:${GOLD};color:#111;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600;">View in Admin Dashboard</a>
+    </p>
+  `;
+  return { subject: `New Order: #${orderNumber(order)}`, html: wrapper('New Order Received', body) };
+};
+
+const adminNewCustomerEmail = (user) => {
+  const body = `
+    <p>A new customer has registered on Franell Hair.</p>
+    <table style="width:100%;font-size:14px;margin:16px 0;">
+      <tr><td style="color:#777;">Name</td><td style="text-align:right;font-weight:600;">${escapeHtml(user.name)}</td></tr>
+      <tr><td style="color:#777;">Email</td><td style="text-align:right;">${escapeHtml(user.email)}</td></tr>
+      <tr><td style="color:#777;">Registered</td><td style="text-align:right;">${formatDate(user.createdAt || Date.now())}</td></tr>
+    </table>
+    <p style="margin-top:20px;">
+      <a href="https://www.franellhair.com/admin/users" style="background:${GOLD};color:#111;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600;">View in Admin Dashboard</a>
+    </p>
+  `;
+  return { subject: `New Customer: ${user.name}`, html: wrapper('New Customer Registered', body) };
+};
+
+const adminNewContactMessageEmail = (msg) => {
+  const body = `
+    <p>A new message was submitted through the Contact page.</p>
+    <table style="width:100%;font-size:14px;margin:16px 0;">
+      <tr><td style="color:#777;">Name</td><td style="text-align:right;font-weight:600;">${escapeHtml(msg.name)}</td></tr>
+      <tr><td style="color:#777;">Email</td><td style="text-align:right;">${escapeHtml(msg.email)}</td></tr>
+      <tr><td style="color:#777;">Subject</td><td style="text-align:right;">${escapeHtml(msg.subject)}</td></tr>
+    </table>
+    <h2 style="font-size:15px;margin:24px 0 6px;">Message</h2>
+    <p style="font-size:14px;color:#444;white-space:pre-wrap;">${escapeHtml(msg.message)}</p>
+    <p style="margin-top:20px;">
+      <a href="https://www.franellhair.com/admin/messages" style="background:${GOLD};color:#111;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600;">View in Admin Dashboard</a>
+    </p>
+  `;
+  return { subject: `New Contact Message: ${msg.subject}`, html: wrapper('New Contact Message', body) };
+};
+
 module.exports = {
   orderConfirmationEmail,
   orderStatusEmail,
@@ -284,4 +344,7 @@ module.exports = {
   mfaOtpEmail,
   reviewReminderEmail,
   otpEmail,
+  adminNewOrderEmail,
+  adminNewCustomerEmail,
+  adminNewContactMessageEmail,
 };

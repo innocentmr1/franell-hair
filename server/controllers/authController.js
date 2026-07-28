@@ -3,7 +3,9 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
 const sendEmail = require('../utils/sendEmail');
-const { welcomeEmail, passwordResetEmail, otpEmail, mfaOtpEmail } = require('../utils/emailTemplates');
+const { welcomeEmail, passwordResetEmail, otpEmail, mfaOtpEmail, adminNewCustomerEmail } = require('../utils/emailTemplates');
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'info@franellhair.com';
 
 // Login attempts against admin accounts are logged directly (not via
 // logAdminAction, since there's no req.user yet at this point).
@@ -51,6 +53,9 @@ const register = async (req, res) => {
   const user = await User.create({ name, email, password, isEmailVerified: false });
 
   await sendVerificationOtp(user);
+
+  const { subject: adminSubject, html: adminHtml } = adminNewCustomerEmail(user);
+  sendEmail({ to: ADMIN_EMAIL, subject: adminSubject, html: adminHtml });
 
   res.status(201).json(formatUser(user));
 };

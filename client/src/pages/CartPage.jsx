@@ -75,7 +75,7 @@ export default function CartPage() {
               </div>
             </div>
             <div className="cart-summary-total">
-              <span>Total</span><span>${total.toFixed(2)}</span>
+              <span>Total (CAD)</span><span>${total.toFixed(2)}</span>
             </div>
             <Link to="/checkout" className="cart-checkout-btn">
               Checkout <ArrowRight size={16} />

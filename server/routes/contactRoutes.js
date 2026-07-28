@@ -2,6 +2,10 @@ const express = require('express');
 const router  = express.Router();
 const ContactMessage = require('../models/ContactMessage');
 const { protect, admin } = require('../middleware/authMiddleware');
+const sendEmail = require('../utils/sendEmail');
+const { adminNewContactMessageEmail } = require('../utils/emailTemplates');
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'info@franellhair.com';
 
 // Public — submit a contact message
 router.post('/', async (req, res, next) => {
@@ -11,6 +15,10 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ message: 'All fields are required.' });
     }
     const msg = await ContactMessage.create({ name, email, subject, message });
+
+    const { subject: adminSubject, html: adminHtml } = adminNewContactMessageEmail(msg);
+    sendEmail({ to: ADMIN_EMAIL, subject: adminSubject, html: adminHtml });
+
     res.status(201).json({ message: 'Message received. We will get back to you within 24 hours.', id: msg._id });
   } catch (err) {
     next(err);
