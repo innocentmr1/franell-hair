@@ -28,7 +28,12 @@ export default function ResetPasswordPage() {
     }
     setLoading(true);
     try {
-      await resetPassword(token, password);
+      const data = await resetPassword(token, password);
+      if (data.mfaRequired) {
+        toast.success('Password updated! Check your email for a sign-in code.');
+        navigate('/admin-mfa', { state: { email: data.email } });
+        return;
+      }
       toast.success('Password updated! You are now signed in.');
       navigate('/');
     } catch (err) {

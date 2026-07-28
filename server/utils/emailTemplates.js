@@ -262,11 +262,26 @@ const otpEmail = (user, otp) => {
   return { subject: 'Confirm Your Franell Hair Email Address', html: wrapper('Verify Your Email', body) };
 };
 
+const mfaOtpEmail = (user, otp) => {
+  const body = `
+    <p>Hi ${user.name},</p>
+    <p>Someone (hopefully you) is signing in to your Franell Hair admin account. Enter the code below to complete the sign in.</p>
+    <div style="text-align:center;margin:24px 0;">
+      <span style="display:inline-block;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:16px 32px;font-size:32px;font-weight:700;letter-spacing:.3em;color:#111;">${otp}</span>
+    </div>
+    <p style="font-size:14px;color:#444;">This code will expire in 10 minutes. If this was not you, your password may be compromised. Please change it immediately and contact us at info@franellhair.com.</p>
+    ${supportFooter}
+  `;
+
+  return { subject: 'Your Franell Hair Admin Sign-In Code', html: wrapper('Admin Sign-In Verification', body) };
+};
+
 module.exports = {
   orderConfirmationEmail,
   orderStatusEmail,
   welcomeEmail,
   passwordResetEmail,
+  mfaOtpEmail,
   reviewReminderEmail,
   otpEmail,
 };

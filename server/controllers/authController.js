@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
 const sendEmail = require('../utils/sendEmail');
-const { welcomeEmail, passwordResetEmail, otpEmail } = require('../utils/emailTemplates');
+const { welcomeEmail, passwordResetEmail, otpEmail, mfaOtpEmail } = require('../utils/emailTemplates');
 
 // Login attempts against admin accounts are logged directly (not via
 // logAdminAction, since there's no req.user yet at this point).
@@ -119,8 +119,46 @@ const login = async (req, res) => {
   if (user.failedLoginAttempts > 0 || user.lockUntil) {
     user.failedLoginAttempts = 0;
     user.lockUntil = null;
-    await user.save();
   }
+
+  if (user.isAdmin) {
+    const otp = generateOtp();
+    user.mfaOTP = hashToken(otp);
+    user.mfaOTPExpires = new Date(Date.now() + OTP_TTL_MS);
+    await user.save();
+
+    const { subject, html } = mfaOtpEmail(user, otp);
+    sendEmail({ to: user.email, subject, html });
+    logAdminLoginAttempt(user, 'admin.mfaCodeSent');
+
+    return res.json({ mfaRequired: true, email: user.email });
+  }
+
+  await user.save();
+  res.json(formatUser(user));
+};
+
+const verifyAdminMfa = async (req, res) => {
+  const { email, otp } = req.body;
+  if (typeof email !== 'string' || typeof otp !== 'string')
+    return res.status(400).json({ message: 'Invalid request' });
+
+  const user = await User.findOne({ email });
+  if (!user || !user.isAdmin) return res.status(401).json({ message: 'Invalid or expired code' });
+
+  if (
+    !user.mfaOTP ||
+    !user.mfaOTPExpires ||
+    user.mfaOTPExpires < new Date() ||
+    hashToken(otp) !== user.mfaOTP
+  ) {
+    logAdminLoginAttempt(user, 'admin.mfaFailed');
+    return res.status(401).json({ message: 'Invalid or expired code' });
+  }
+
+  user.mfaOTP = null;
+  user.mfaOTPExpires = null;
+  await user.save();
   logAdminLoginAttempt(user, 'admin.loginSuccess');
 
   res.json(formatUser(user));
@@ -164,8 +202,23 @@ const resetPassword = async (req, res) => {
   user.resetPasswordExpires = null;
   user.failedLoginAttempts = 0;
   user.lockUntil = null;
-  await user.save();
+  user.mfaOTP = null;
+  user.mfaOTPExpires = null;
 
+  if (user.isAdmin) {
+    const otp = generateOtp();
+    user.mfaOTP = hashToken(otp);
+    user.mfaOTPExpires = new Date(Date.now() + OTP_TTL_MS);
+    await user.save();
+
+    const { subject, html } = mfaOtpEmail(user, otp);
+    sendEmail({ to: user.email, subject, html });
+    logAdminLoginAttempt(user, 'admin.mfaCodeSent');
+
+    return res.json({ mfaRequired: true, email: user.email });
+  }
+
+  await user.save();
   res.json(formatUser(user));
 };
 
@@ -201,4 +254,4 @@ function formatUser(u) {
   };
 }
 
-module.exports = { register, login, forgotPassword, resetPassword, verifyEmail, resendOtp, getProfile, updateProfile };
+module.exports = { register, login, verifyAdminMfa, forgotPassword, resetPassword, verifyEmail, resendOtp, getProfile, updateProfile };

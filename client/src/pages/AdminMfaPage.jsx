@@ -1,34 +1,36 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Eye, EyeOff, ArrowRight, Star } from 'lucide-react';
+import { ArrowRight, Star, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const GOLD = '#C9A84C';
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+export default function AdminMfaPage() {
+  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { verifyAdminMfa } = useAuth();
   const navigate = useNavigate();
   const { state } = useLocation();
+  const email = state?.email;
+
+  if (!email) return (
+    <div className="checkout-noauth">
+      <h2>Sign in first</h2>
+      <p>Please sign in with your email and password to receive a verification code.</p>
+      <Link to="/login" className="checkout-signin-btn">Sign In</Link>
+    </div>
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const data = await login(email, password);
-      if (data.mfaRequired) {
-        toast.success('Check your email for a sign-in code.');
-        navigate('/admin-mfa', { state: { email: data.email, from: state?.from } });
-        return;
-      }
+      await verifyAdminMfa(email, otp);
       toast.success('Welcome back!');
-      navigate(state?.from || '/');
+      navigate(state?.from || '/admin');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Invalid email or password');
+      toast.error(err.response?.data?.message || 'Invalid or expired code');
     } finally {
       setLoading(false);
     }
@@ -50,11 +52,11 @@ export default function LoginPage() {
         <div className="auth-left-content">
           <div className="auth-left-line" />
           <h2 className="auth-left-heading">
-            Welcome<br />back to<br />
-            <span className="auth-left-heading-gold">your glow.</span>
+            Verifying<br />
+            <span className="auth-left-heading-gold">it's really you.</span>
           </h2>
           <p className="auth-left-desc">
-            Sign in to track orders, save favourites, and unlock exclusive member deals.
+            Admin accounts require an extra verification step for security.
           </p>
 
           <div className="auth-testimonial">
@@ -87,57 +89,41 @@ export default function LoginPage() {
         </Link>
 
         <div className="auth-form-container">
-          <h1 className="auth-form-heading">Sign In</h1>
-          <p className="auth-form-subtitle">
-            No account?{' '}
-            <Link to="/register">Create one free</Link>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+            <ShieldCheck size={40} style={{ color: GOLD }} />
+          </div>
+          <h1 className="auth-form-heading" style={{ textAlign: 'center' }}>Admin Verification</h1>
+          <p className="auth-form-subtitle" style={{ textAlign: 'center' }}>
+            We sent a 6 digit code to <strong>{email}</strong>. Enter it below to finish signing in.
           </p>
 
           <form onSubmit={handleSubmit} className="auth-form">
             <div>
-              <label className="form-label">Email Address</label>
+              <label className="form-label">Verification Code</label>
               <input
-                type="email" required value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                type="text" required value={otp} maxLength={6} inputMode="numeric"
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                placeholder="123456"
                 className="form-input"
+                style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.5em', fontWeight: 700 }}
+                autoFocus
               />
             </div>
 
-            <div>
-              <div className="auth-pw-header">
-                <label className="form-label" style={{ marginBottom: 0 }}>Password</label>
-                <Link to="/forgot-password" className="auth-forgot">Forgot?</Link>
-              </div>
-              <div className="input-wrap">
-                <input
-                  type={showPassword ? 'text' : 'password'} required value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="form-input"
-                  style={{ paddingRight: '2.75rem' }}
-                />
-                <button type="button" className="input-eye" onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
-            </div>
-
-            <button type="submit" disabled={loading} className="auth-submit">
+            <button type="submit" disabled={loading || otp.length !== 6} className="auth-submit">
               {loading ? (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span className="spinner" />
-                  Signing in...
+                  Verifying...
                 </span>
               ) : (
-                <>Sign In <ArrowRight size={14} /></>
+                <>Verify and Sign In <ArrowRight size={14} /></>
               )}
             </button>
           </form>
 
-          <p className="auth-terms">
-            By signing in you agree to our{' '}
-            <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a>.
+          <p className="auth-form-subtitle" style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+            Didn't get a code? <Link to="/login">Go back and sign in again</Link> to request a new one.
           </p>
         </div>
       </div>

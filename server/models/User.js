@@ -28,6 +28,9 @@ const userSchema = new mongoose.Schema(
     isEmailVerified: { type: Boolean, default: true },
     emailVerificationOTP: { type: String, default: null },
     emailVerificationOTPExpires: { type: Date, default: null },
+    // Email-based MFA, required only for admin accounts after password check.
+    mfaOTP: { type: String, default: null },
+    mfaOTPExpires: { type: Date, default: null },
   },
   { timestamps: true }
 );
