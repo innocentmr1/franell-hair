@@ -14,7 +14,6 @@ const SORT_OPTIONS = [
 export default function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
-  const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -44,7 +43,6 @@ export default function ShopPage() {
     try {
       const { data } = await getProducts({ category, hairType, search, sort, page, minPrice, maxPrice, limit: 12 });
       setProducts(data.products);
-      setTotal(data.total);
       setPages(data.pages);
     } catch {
       setProducts([]);
@@ -62,7 +60,7 @@ export default function ShopPage() {
         <div className="filter-options">
           <button onClick={() => setParam('category', '')}
             className={`filter-btn ${!category ? 'active' : ''}`}>
-            All Products ({total})
+            All Products
           </button>
           {cats.map((cat) => (
             <button key={cat._id || cat.name} onClick={() => setParam('category', cat.name)}
@@ -105,7 +103,6 @@ export default function ShopPage() {
           <h1 className="shop-title">
             {search ? `Results for "${search}"` : category || 'All Products'}
           </h1>
-          <p className="shop-count">{total} products</p>
         </div>
         <div className="shop-header-right">
           <button onClick={() => setSidebarOpen(true)} className="shop-filter-btn">

@@ -40,6 +40,7 @@ import FAQPage      from './pages/FAQPage';
 import ShippingPage from './pages/ShippingPage';
 import TopLoader    from './components/ui/TopLoader';
 import WhatsAppButton from './components/ui/WhatsAppButton';
+import ScrollToTop from './components/ui/ScrollToTop';
 
 function Layout({ children }) {
   return (
@@ -58,6 +59,7 @@ export default function App() {
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
+          <ScrollToTop />
           <TopLoader />
           <WhatsAppButton />
           <Toaster position="top-right" toastOptions={{ duration: 3000 }} />

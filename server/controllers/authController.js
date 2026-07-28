@@ -50,8 +50,6 @@ const register = async (req, res) => {
 
   const user = await User.create({ name, email, password, isEmailVerified: false });
 
-  const { subject, html } = welcomeEmail(user);
-  sendEmail({ to: user.email, subject, html });
   await sendVerificationOtp(user);
 
   res.status(201).json(formatUser(user));
@@ -77,6 +75,9 @@ const verifyEmail = async (req, res) => {
   user.emailVerificationOTP = null;
   user.emailVerificationOTPExpires = null;
   await user.save();
+
+  const { subject, html } = welcomeEmail(user);
+  sendEmail({ to: user.email, subject, html });
 
   res.json(formatUser(user));
 };
