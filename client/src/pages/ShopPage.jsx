@@ -95,7 +95,7 @@ export default function ShopPage() {
     <div className="shop-page">
       <SEO
         title={category || 'Shop'}
-        description="Browse our full range of 100% Remy human hair bundles, braids, locs, twists and wigs. Free shipping across Canada."
+        description="Browse our full range of 100% human hair bundles, braids, locs, twists and wigs. Free shipping across Canada."
         path="/shop"
       />
       <div className="shop-header">

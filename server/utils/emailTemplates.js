@@ -198,7 +198,7 @@ const welcomeEmail = (user) => {
     <p>Welcome to Franell Hair. Your account has been created successfully, and you are all set to start shopping.</p>
     <p style="font-size:14px;color:#444;">Here is what your account gives you access to:</p>
     <table style="width:100%;font-size:14px;margin:12px 0 20px;">
-      <tr><td style="padding:6px 0;">100% Remy human hair bundles, wigs, braids, and extensions</td></tr>
+      <tr><td style="padding:6px 0;">100% human hair bundles, wigs, braids, and extensions</td></tr>
       <tr><td style="padding:6px 0;">Free standard shipping across Canada on every order</td></tr>
       <tr><td style="padding:6px 0;">10 day hassle free returns and exchanges</td></tr>
       <tr><td style="padding:6px 0;">Order tracking and history from your account</td></tr>

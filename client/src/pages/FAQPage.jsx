@@ -16,7 +16,7 @@ const FAQS = [
   {
     section: 'Products & Quality',
     items: [
-      { q: 'What type of hair do you sell?', a: 'We sell 100% premium Remy human hair including wigs, bundles, closures, frontals, and extensions. Every product is quality-checked before it leaves our hands.' },
+      { q: 'What type of hair do you sell?', a: 'We sell 100% premium human hair including wigs, bundles, closures, frontals, and extensions. Every product is quality-checked before it leaves our hands.' },
       { q: 'Can the hair be dyed or heat-styled?', a: 'Yes. Our human hair products can be dyed, bleached, curled, and flat-ironed just like natural hair. We recommend a strand test first and always use a heat protectant.' },
       { q: 'How do I choose the right length?', a: 'Lengths are measured from root to tip when the hair is straight. Body wave and curly styles appear shorter due to the curl pattern. Use the Size Guide on any product page for a full length chart.' },
       { q: 'How long will the hair last?', a: 'With proper care, our wigs and bundles last 12–24 months or longer. Wash every 2–4 weeks with a sulfate-free shampoo and store on a wig stand when not in use.' },

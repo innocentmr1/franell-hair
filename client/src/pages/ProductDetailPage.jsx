@@ -211,7 +211,7 @@ export default function ProductDetailPage() {
     <div className="product-detail">
       <SEO
         title={product.name}
-        description={stripHtml(product.description) || `${product.name} — 100% Remy human hair, shipped across Canada.`}
+        description={stripHtml(product.description) || `${product.name} — 100% human hair, shipped across Canada.`}
         path={`/product/${id}`}
         image={product.images?.[0]}
         type="product"

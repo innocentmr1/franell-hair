@@ -65,7 +65,7 @@ export default function HomePage() {
   return (
     <div>
       <SEO
-        description="Premium 100% Remy human hair, bundles, braids and extensions. Free shipping across Canada, crafted for a flawless, natural look."
+        description="Premium 100% human hair, bundles, braids and extensions. Free shipping across Canada, crafted for a flawless, natural look."
         path="/"
       />
 

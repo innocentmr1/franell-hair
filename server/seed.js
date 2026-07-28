@@ -6,7 +6,7 @@ const Category = require('./models/Category');
 
 const SEED_CATEGORIES = [
   { name: 'Wigs',          description: 'Full lace, HD lace & glueless wigs' },
-  { name: 'Bundles',       description: 'Raw, virgin & Remy hair bundles' },
+  { name: 'Bundles',       description: 'Raw & virgin hair bundles' },
   { name: 'Closures',      description: '4x4, 5x5 & 6x6 lace closures' },
   { name: 'Frontals',      description: '13x4 & 13x6 lace frontals' },
   { name: 'Extensions',    description: 'Clip-ins, tape-ins & weave extensions' },

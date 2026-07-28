@@ -24,7 +24,7 @@ export default function AboutPage() {
 
   return (
     <div className="about-page">
-      <SEO title="About Us" description="Learn the story behind Franell Hair — premium 100% Remy human hair, crafted for a flawless, natural look." path="/about" />
+      <SEO title="About Us" description="Learn the story behind Franell Hair — premium 100% human hair, crafted for a flawless, natural look." path="/about" />
       <div className="about-hero">
         <h1 className="about-hero-title">{content.heroTitle}</h1>
         <p className="about-hero-sub">{content.heroSub}</p>
