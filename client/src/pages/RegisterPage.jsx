@@ -39,8 +39,8 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await register(form.name, form.email, form.password);
-      toast.success('Welcome to Franell Hair!');
-      navigate('/');
+      toast.success('Account created! Please verify your email.');
+      navigate('/verify-email');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
     } finally {

@@ -15,6 +15,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import ProfilePage from './pages/ProfilePage';
 import OrderList, { OrderDetail } from './pages/OrdersPage';
 import WishlistPage from './pages/WishlistPage';
@@ -64,6 +65,7 @@ export default function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
             <Route path="/" element={<Layout><HomePage /></Layout>} />
             <Route path="/shop" element={<Layout><ShopPage /></Layout>} />
             <Route path="/product/:id" element={<Layout><ProductDetailPage /></Layout>} />

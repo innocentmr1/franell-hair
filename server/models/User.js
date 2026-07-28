@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema(
     lockUntil: { type: Date, default: null },
     resetPasswordToken: { type: String, default: null },
     resetPasswordExpires: { type: Date, default: null },
+    // Default true so existing accounts (created before this feature) are
+    // unaffected — only fresh registrations explicitly set this to false.
+    isEmailVerified: { type: Boolean, default: true },
+    emailVerificationOTP: { type: String, default: null },
+    emailVerificationOTPExpires: { type: Date, default: null },
   },
   { timestamps: true }
 );

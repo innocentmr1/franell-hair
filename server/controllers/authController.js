@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
 const sendEmail = require('../utils/sendEmail');
-const { welcomeEmail, passwordResetEmail } = require('../utils/emailTemplates');
+const { welcomeEmail, passwordResetEmail, otpEmail } = require('../utils/emailTemplates');
 
 // Login attempts against admin accounts are logged directly (not via
 // logAdminAction, since there's no req.user yet at this point).
@@ -16,6 +16,7 @@ const logAdminLoginAttempt = (user, action) => {
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCK_TIME_MS = 15 * 60 * 1000; // 15 minutes
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
+const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -26,6 +27,18 @@ const isStrongPassword = (pw) =>
 
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
+const generateOtp = () => String(crypto.randomInt(100000, 1000000)); // 6 digits
+
+const sendVerificationOtp = async (user) => {
+  const otp = generateOtp();
+  user.emailVerificationOTP = hashToken(otp);
+  user.emailVerificationOTPExpires = new Date(Date.now() + OTP_TTL_MS);
+  await user.save();
+
+  const { subject, html } = otpEmail(user, otp);
+  sendEmail({ to: user.email, subject, html });
+};
+
 const register = async (req, res) => {
   const { name, email, password } = req.body;
   if (typeof email !== 'string' || typeof password !== 'string' || typeof name !== 'string')
@@ -35,12 +48,45 @@ const register = async (req, res) => {
   if (await User.findOne({ email }))
     return res.status(400).json({ message: 'Email already registered' });
 
-  const user = await User.create({ name, email, password });
+  const user = await User.create({ name, email, password, isEmailVerified: false });
 
   const { subject, html } = welcomeEmail(user);
   sendEmail({ to: user.email, subject, html });
+  await sendVerificationOtp(user);
 
   res.status(201).json(formatUser(user));
+};
+
+const verifyEmail = async (req, res) => {
+  const { otp } = req.body;
+  if (typeof otp !== 'string') return res.status(400).json({ message: 'Invalid code' });
+
+  const user = await User.findById(req.user._id);
+  if (user.isEmailVerified) return res.json(formatUser(user));
+
+  if (
+    !user.emailVerificationOTP ||
+    !user.emailVerificationOTPExpires ||
+    user.emailVerificationOTPExpires < new Date() ||
+    hashToken(otp) !== user.emailVerificationOTP
+  ) {
+    return res.status(400).json({ message: 'This code is invalid or has expired.' });
+  }
+
+  user.isEmailVerified = true;
+  user.emailVerificationOTP = null;
+  user.emailVerificationOTPExpires = null;
+  await user.save();
+
+  res.json(formatUser(user));
+};
+
+const resendOtp = async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (user.isEmailVerified) return res.status(400).json({ message: 'This account is already verified.' });
+
+  await sendVerificationOtp(user);
+  res.json({ message: 'A new verification code has been sent to your email.' });
 };
 
 const login = async (req, res) => {
@@ -147,6 +193,7 @@ function formatUser(u) {
   return {
     _id: u._id, name: u.name, email: u.email,
     isAdmin: u.isAdmin, phone: u.phone || '',
+    isEmailVerified: u.isEmailVerified,
     shippingAddress: u.shippingAddress || {},
     preferences: u.preferences || { newsletter: false, orderUpdates: true },
     createdAt: u.createdAt,
@@ -154,4 +201,4 @@ function formatUser(u) {
   };
 }
 
-module.exports = { register, login, forgotPassword, resetPassword, getProfile, updateProfile };
+module.exports = { register, login, forgotPassword, resetPassword, verifyEmail, resendOtp, getProfile, updateProfile };
