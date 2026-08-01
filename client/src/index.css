@@ -468,6 +468,15 @@ input, textarea, select { font-family: inherit; }
 }
 .hero-slide.active  { opacity: 1;  pointer-events: auto; }
 .hero-slide.exit    { opacity: 0; }
+
+/* Below 1024px (mobile/tablet), the hero is much narrower than it is tall at
+   100vh, so "cover" has to scale group photos way up to fill the height —
+   cropping most of the width off. Capping the height keeps the full-bleed
+   "cover" look (no letterboxing) while cropping far less. Desktop (1024px+)
+   keeps its own min-height: 100vh untouched. */
+@media (max-width: 1023px) {
+  .hero { min-height: 70vh; }
+}
 .hero-slider-gradient {
   position: absolute; inset: 0; z-index: 1;
   background: linear-gradient(to top, rgba(10,10,10,.65) 0%, transparent 55%);

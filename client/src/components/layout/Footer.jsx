@@ -1,4 +1,10 @@
 import { Link } from 'react-router-dom';
+import { FaInstagram, FaTiktok } from 'react-icons/fa6';
+
+const SOCIALS = [
+  { label: 'Instagram', Icon: FaInstagram, href: 'https://www.instagram.com/franell_hair?igsh=ZDVmeHI3cXkycXpt' },
+  { label: 'TikTok',     Icon: FaTiktok,    href: 'https://www.tiktok.com/@franell_hair_?_r=1&_t=ZS-98PWQfnDhQ7' },
+];
 
 const HELP_LINKS = [
   { label: 'Track Order',          to: '/orders' },
@@ -30,8 +36,10 @@ export default function Footer() {
             Premium 100% Human Hair, Bundles &amp; Extensions, crafted for a flawless, natural look that helps you feel confident and beautiful every day.
           </p>
           <div className="footer-socials">
-            {['IG', 'TK', 'FB'].map((s) => (
-              <a key={s} href="#" className="footer-social-btn">{s}</a>
+            {SOCIALS.map(({ label, Icon, href }) => (
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="footer-social-btn" aria-label={label}>
+                <Icon size={14} />
+              </a>
             ))}
           </div>
         </div>

@@ -1,22 +1,18 @@
 import { useEffect, useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const FALLBACKS = [
-  'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=1920&h=1080&fit=crop&crop=faces,center&q=90&auto=format',
-  'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=1920&h=1080&fit=crop&crop=faces,center&q=90&auto=format',
-  'https://images.unsplash.com/photo-1519699047748-de8e44f90ae4?w=1920&h=1080&fit=crop&crop=faces,center&q=90&auto=format',
-  'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1920&h=1080&fit=crop&crop=faces,center&q=90&auto=format',
-];
-
 export default function HeroSlider({ slides = [] }) {
-  const raw    = slides.length ? slides.map((s) => s.imageUrl) : FALLBACKS;
-  const images = raw.map(resolveUrl);
+  const images = slides
+    .map((s) => s.imageUrl)
+    .filter((url) => url && !url.startsWith('http://localhost'))
+    .map(resolveUrl);
 
   const [idx, setIdx]   = useState(0);
   const [fade, setFade] = useState(true);
   const timer = useRef(null);
 
   const goTo = (next) => {
+    if (images.length < 2) return;
     setFade(false);
     setTimeout(() => {
       setIdx((next + images.length) % images.length);
@@ -26,14 +22,13 @@ export default function HeroSlider({ slides = [] }) {
 
   const startTimer = () => {
     clearInterval(timer.current);
+    if (images.length < 2) return;
     timer.current = setInterval(() => goTo(idx + 1), 5000);
   };
 
   useEffect(() => { startTimer(); return () => clearInterval(timer.current); }, [idx, images.length]);
 
   function resolveUrl(url) {
-    if (!url) return FALLBACKS[0];
-    if (url.startsWith('http://localhost')) return FALLBACKS[0];
     if (url.startsWith('/uploads/')) {
       const raw = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
       const base = raw.endsWith('/api') ? raw.slice(0, -4) : raw;
@@ -41,6 +36,8 @@ export default function HeroSlider({ slides = [] }) {
     }
     return url;
   }
+
+  if (!images.length) return <div className="hero-slider" />;
 
   return (
     <div className="hero-slider">
