@@ -107,4 +107,8 @@ export const adminGetContactMsgs   = ()              => api.get('/contact');
 export const adminMarkContactRead  = (id)            => api.put(`/contact/${id}/read`);
 export const adminDeleteContactMsg = (id)            => api.delete(`/contact/${id}`);
 
+// Visits / Traffic
+export const recordVisit           = (data)          => api.post('/visits', data);
+export const getVisitStats         = ()              => api.get('/visits/stats');
+
 export default api;

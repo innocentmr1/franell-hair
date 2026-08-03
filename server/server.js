@@ -47,6 +47,7 @@ app.use('/api/subscribers', require('./routes/subscriberRoutes'));
 app.use('/api/promo',       require('./routes/promoRoutes'));
 app.use('/api/saloons',     require('./routes/saloonRoutes'));
 app.use('/api/contact',     require('./routes/contactRoutes'));
+app.use('/api/visits',      require('./routes/visitRoutes'));
 
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 

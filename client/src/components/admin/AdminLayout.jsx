@@ -1,9 +1,10 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Settings, LogOut, ExternalLink, Ticket, Scissors, MessageSquare, FileText } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Settings, LogOut, ExternalLink, Ticket, Scissors, MessageSquare, FileText, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const NAV = [
   { to: '/admin',              label: 'Dashboard',   icon: LayoutDashboard, end: true },
+  { to: '/admin/traffic',      label: 'Traffic',     icon: BarChart3 },
   { to: '/admin/products',     label: 'Products',    icon: Package },
   { to: '/admin/orders',       label: 'Orders',      icon: ShoppingBag },
   { to: '/admin/categories',   label: 'Categories',  icon: Tag },
