@@ -6,8 +6,8 @@ const FAQS = [
   {
     section: 'Orders & Shipping',
     items: [
-      { q: 'How long does shipping take?', a: 'Standard shipping is free and takes 3 business days. Express shipping is available at checkout for $30 and delivers in 2 business days.' },
-      { q: 'Is shipping free?', a: 'Yes — standard shipping is always free on every order. No minimum spend required.' },
+      { q: 'How long does shipping take?', a: 'Delivery takes 3-5 business days. Shipping is free for addresses within Ottawa; a flat $30 shipping fee applies to addresses outside Ottawa.' },
+      { q: 'Is shipping free?', a: 'Shipping is free for addresses within Ottawa, no minimum spend required. A flat $30 shipping fee applies to addresses outside Ottawa.' },
       { q: 'Where do you ship?', a: 'We currently ship to addresses within Canada only. We use Canada Post for all deliveries.' },
       { q: 'Can I track my order?', a: 'Yes. Once your order ships you can view its status anytime under My Orders in your account.' },
       { q: 'What if my package is lost or arrives damaged?', a: 'Please contact us within 2 days of the expected delivery date if your package is lost or arrives damaged. Reach us at info@franellhair.com or call +1 (709) 341-7527 and we will make it right.' },

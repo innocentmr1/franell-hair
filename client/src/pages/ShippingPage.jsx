@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
-import { Truck, RotateCcw, Clock, MapPin } from 'lucide-react';
+import { Truck, RotateCcw, MapPin } from 'lucide-react';
 import SEO from '../components/ui/SEO';
 
 export default function ShippingPage() {
   return (
     <div className="shipping-page">
-      <SEO title="Shipping & Returns" description="Free shipping across Canada, 10-day hassle-free returns, and everything you need to know about delivery at Franell Hair." path="/shipping" />
+      <SEO title="Shipping & Returns" description="Free delivery within Ottawa, flat-rate shipping across the rest of Canada, 10-day hassle-free returns, and everything you need to know about delivery at Franell Hair." path="/shipping" />
       <div className="faq-hero">
         <h1 className="faq-hero-title">Shipping & Returns</h1>
         <p className="faq-hero-sub">Fast, reliable delivery and hassle-free returns.</p>
@@ -16,9 +16,8 @@ export default function ShippingPage() {
         {/* Shipping */}
         <div className="shipping-cards">
           {[
-            { icon: <Truck size={28} />, title: 'Standard Shipping', detail: '3 business days', note: 'Always FREE — no minimum order required' },
-            { icon: <Clock size={28} />, title: 'Express Shipping', detail: '2 business days', note: '$30 flat fee — faster delivery to your door' },
-            { icon: <MapPin size={28} />, title: 'Same-Day Dispatch', detail: 'Orders before 2pm EST', note: 'Placed Mon–Fri ship the same day' },
+            { icon: <Truck size={28} />, title: 'Ottawa Delivery', detail: '3-5 business days', note: 'FREE for Ottawa addresses' },
+            { icon: <MapPin size={28} />, title: 'Outside Ottawa', detail: '3-5 business days', note: '$30 flat shipping fee' },
           ].map((c) => (
             <div key={c.title} className="shipping-card">
               <div className="shipping-card-icon">{c.icon}</div>

@@ -22,7 +22,7 @@ export default function Navbar() {
   const [mobileCatOpen, setMobileCatOpen] = useState(false);
   const [searchQuery, setSearch]  = useState('');
   const [cats, setCats]           = useState(FALLBACK_CATS);
-  const [announcement, setAnnouncement] = useState('✦ FREE SHIPPING ON ORDERS $150+  ·  BUY NOW PAY LATER AVAILABLE  ·  NEW ARRIVALS EVERY WEEK ✦');
+  const [announcement, setAnnouncement] = useState('✦ FREE DELIVERY WITHIN OTTAWA  ·  SHIPPING ACROSS CANADA  ·  NEW ARRIVALS EVERY WEEK ✦');
   const { user, logout }          = useAuth();
   const { totalItems }            = useCart();
   const { items: wishItems }      = useWishlist();

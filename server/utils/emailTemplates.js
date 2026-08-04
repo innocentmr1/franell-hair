@@ -12,7 +12,7 @@ const formatDate = (date) =>
   new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
 const shippingMethodLabel = (order) =>
-  order.shippingPrice === 0 ? 'Standard Shipping (3 business days)' : 'Express Shipping (2 business days)';
+  order.shippingPrice === 0 ? 'Ottawa Delivery (3-5 business days)' : 'Outside Ottawa Shipping (3-5 business days)';
 
 const itemsRows = (order) =>
   order.orderItems
@@ -199,7 +199,7 @@ const welcomeEmail = (user) => {
     <p style="font-size:14px;color:#444;">Here is what your account gives you access to:</p>
     <table style="width:100%;font-size:14px;margin:12px 0 20px;">
       <tr><td style="padding:6px 0;">100% human hair bundles, wigs, braids, and extensions</td></tr>
-      <tr><td style="padding:6px 0;">Free standard shipping across Canada on every order</td></tr>
+      <tr><td style="padding:6px 0;">Free delivery within Ottawa, flat $30 shipping elsewhere in Canada</td></tr>
       <tr><td style="padding:6px 0;">10 day hassle free returns and exchanges</td></tr>
       <tr><td style="padding:6px 0;">Order tracking and history from your account</td></tr>
       <tr><td style="padding:6px 0;">A wishlist to save your favourite products</td></tr>

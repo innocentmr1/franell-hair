@@ -12,7 +12,7 @@ const GOLD = '#C9A84C';
 const ICON_MAP = { Truck, RotateCcw, Shield, CreditCard };
 
 const DEFAULT_PERKS = [
-  { icon: 'Truck',      title: 'Free Shipping',   desc: 'Always free, every order' },
+  { icon: 'Truck',      title: 'Free Shipping',   desc: 'Free within Ottawa' },
   { icon: 'RotateCcw',  title: '10-Day Returns',  desc: 'Hassle-free returns' },
   { icon: 'Shield',     title: '100% Human Hair', desc: 'Certified & authentic' },
   { icon: 'CreditCard', title: 'Secure Payment',  desc: 'Powered by Stripe' },
@@ -65,7 +65,7 @@ export default function HomePage() {
   return (
     <div>
       <SEO
-        description="Premium 100% human hair, bundles, braids and extensions. Free shipping across Canada, crafted for a flawless, natural look."
+        description="Premium 100% human hair, bundles, braids and extensions. Free delivery within Ottawa, shipping across Canada, crafted for a flawless, natural look."
         path="/"
       />
 

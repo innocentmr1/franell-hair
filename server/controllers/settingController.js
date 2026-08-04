@@ -1,9 +1,9 @@
 const Setting = require('../models/Setting');
 
-const DEFAULT_ANNOUNCEMENT = '✦ FREE STANDARD SHIPPING ON EVERY ORDER  ·  EXPRESS DELIVERY AVAILABLE  ·  NEW ARRIVALS EVERY WEEK ✦';
+const DEFAULT_ANNOUNCEMENT = '✦ FREE DELIVERY WITHIN OTTAWA  ·  SHIPPING ACROSS CANADA  ·  NEW ARRIVALS EVERY WEEK ✦';
 
 const DEFAULT_PERKS = [
-  { icon: 'Truck',      title: 'Free Shipping',   desc: 'Always free, every order' },
+  { icon: 'Truck',      title: 'Free Shipping',   desc: 'Free within Ottawa' },
   { icon: 'RotateCcw',  title: '10-Day Returns',  desc: 'Hassle-free returns' },
   { icon: 'Shield',     title: '100% Human Hair', desc: 'Certified & authentic' },
   { icon: 'CreditCard', title: 'Secure Payment',  desc: 'Powered by Stripe' },
@@ -98,7 +98,7 @@ const DEFAULT_ABOUT = {
   valuesTitle: 'Why choose Franell?',
   values: [
     { icon: '✦', title: 'Premium Quality', body: '100% high-grade hair sourced from trusted suppliers. Every product is quality-checked before shipping.' },
-    { icon: '🚚', title: 'Fast Shipping',   body: 'Orders ship within 1–2 business days. Standard shipping is free and takes 3 days; express is $30 for 2-day delivery.' },
+    { icon: '🚚', title: 'Fast Shipping',   body: 'Orders ship within 1–2 business days. Delivery takes 3-5 business days — free within Ottawa, $30 flat fee outside Ottawa.' },
     { icon: '↩',  title: '10-Day Returns',  body: 'Not satisfied? Return any unused, unopened product within 10 days for a full refund.' },
     { icon: '💬', title: 'Expert Support',  body: 'Our hair specialists are available 7 days a week to help you choose the right product.' },
   ],

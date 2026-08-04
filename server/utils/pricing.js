@@ -1,7 +1,7 @@
 const Product = require('../models/Product');
 const PromoCode = require('../models/PromoCode');
 
-const computeShippingPrice = (shippingMethod) => (shippingMethod === 'express' ? 30 : 0);
+const computeShippingPrice = (shippingMethod) => (shippingMethod === 'outside_ottawa' ? 30 : 0);
 
 // Rebuilds orderItems from authoritative DB data (name/image/price) — a
 // client-sent price/name/image is never trusted, only product id + qty +

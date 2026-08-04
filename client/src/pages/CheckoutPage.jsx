@@ -113,7 +113,7 @@ export default function CheckoutPage() {
   const [promoCode, setPromoCode]         = useState('');
   const [promoApplied, setPromoApplied]   = useState(null);
   const [promoLoading, setPromoLoading]   = useState(false);
-  const [shippingMethod, setShippingMethod] = useState('standard');
+  const [shippingMethod, setShippingMethod] = useState('ottawa');
   const [payMethod, setPayMethod]         = useState('card');
   const [clientSecret, setClientSecret]   = useState('');
 
@@ -123,7 +123,7 @@ export default function CheckoutPage() {
     address: '', city: '', province: '', postal: '', country: 'Canada',
   });
 
-  const shippingCost = shippingMethod === 'express' ? 30 : 0;
+  const shippingCost = shippingMethod === 'outside_ottawa' ? 30 : 0;
   const discount     = promoApplied?.discount || 0;
   const total        = +(subtotal - discount + shippingCost).toFixed(2);
 
@@ -269,12 +269,12 @@ export default function CheckoutPage() {
 
               <div style={{ marginTop: '1.25rem' }}>
                 <label style={{ fontWeight: 600, fontSize: '.875rem', display: 'block', marginBottom: '.75rem' }}>
-                  Shipping Method
+                  Delivery Location
                 </label>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
                   {[
-                    { value: 'standard', label: 'Standard Shipping', sub: '3 business days', price: 'FREE' },
-                    { value: 'express',  label: 'Express Shipping',  sub: '2 business days', price: '$30.00' },
+                    { value: 'ottawa',         label: "I'm in Ottawa",  sub: '3-5 business days', price: 'FREE' },
+                    { value: 'outside_ottawa', label: 'Outside Ottawa', sub: '3-5 business days', price: '$30.00' },
                   ].map(({ value, label, sub, price }) => (
                     <label key={value} style={{
                       display: 'flex', alignItems: 'center', gap: '1rem', padding: '.875rem 1rem', cursor: 'pointer',
@@ -405,7 +405,7 @@ export default function CheckoutPage() {
                 </div>
               )}
               <div className="checkout-pricing-row">
-                <span>Shipping ({shippingMethod === 'express' ? 'Express' : 'Standard'})</span>
+                <span>Shipping ({shippingMethod === 'outside_ottawa' ? 'Outside Ottawa' : 'Ottawa'})</span>
                 <span className={shippingCost === 0 ? 'checkout-pricing-free' : ''}>
                   {shippingCost === 0 ? 'FREE' : `$${shippingCost.toFixed(2)}`}
                 </span>

@@ -8,7 +8,7 @@ const perks = [
   'Track your orders in real time',
   'Save your favourite products',
   'Exclusive member-only discounts',
-  'Free shipping rewards',
+  'Free delivery within Ottawa',
 ];
 
 const STRONG_PW = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
