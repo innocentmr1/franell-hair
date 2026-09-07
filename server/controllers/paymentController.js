@@ -15,7 +15,7 @@ const createPaymentIntent = async (req, res) => {
       amount: Math.round(totalPrice * 100),
       currency: 'cad',
       automatic_payment_methods: { enabled: true },
-      metadata: { userId: req.user._id.toString() },
+      metadata: { userId: req.user?._id?.toString() || 'guest' },
     });
     res.json({ clientSecret: paymentIntent.client_secret, totalPrice });
   } catch (err) {

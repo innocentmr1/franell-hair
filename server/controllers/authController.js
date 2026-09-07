@@ -20,8 +20,12 @@ const LOCK_TIME_MS = 15 * 60 * 1000; // 15 minutes
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
+// Safety ceiling only — the real-world logout mechanism is the 1hr client-side
+// idle timer (IdleLogout.jsx), which signs out inactive users well before this
+// expires. This cap just bounds how long a token can live if ever reused
+// outside the browser (e.g. copied out of localStorage).
 const generateToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '24h' });
 
 // Min 8 chars, at least one uppercase, one lowercase, one digit.
 const isStrongPassword = (pw) =>

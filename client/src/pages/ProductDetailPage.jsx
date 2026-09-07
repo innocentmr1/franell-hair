@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Star, ShoppingCart, ChevronLeft, ChevronRight, X, ZoomIn, Ruler } from 'lucide-react';
+import { Star, ShoppingCart, ChevronLeft, ChevronRight, X, ZoomIn, Ruler, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 import { getProduct, addReview, getRelatedProducts, notifyWhenInStock } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -342,6 +342,18 @@ export default function ProductDetailPage() {
             {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
           </button>
           {product.stock === 0 && <StockAlert productId={product._id} />}
+
+          <div className="product-trust-row">
+            <span className="product-trust-item"><ShieldCheck size={15} /> Secure checkout</span>
+            <span className="product-trust-item"><Truck size={15} /> Free Ottawa delivery</span>
+            <span className="product-trust-item"><RotateCcw size={15} /> 10-day easy returns</span>
+          </div>
+          {product.numReviews > 0 && (
+            <p className="product-trust-social-proof">
+              <Star size={13} style={{ fill: AMBER, color: AMBER }} />{' '}
+              Rated {product.rating?.toFixed(1)} by {product.numReviews} {product.numReviews === 1 ? 'customer' : 'customers'}
+            </p>
+          )}
 
           <div className="product-desc-section">
             <h3 className="product-desc-title">Description</h3>

@@ -146,8 +146,11 @@ export default function AdminOrders() {
                         #{o._id.slice(-8).toUpperCase()}
                       </td>
                       <td>
-                        <div style={{ fontWeight: 600, fontSize: '.875rem' }}>{o.user?.name || 'Guest'}</div>
-                        <div style={{ fontSize: '.75rem', color: '#9ca3af' }}>{o.user?.email}</div>
+                        <div style={{ fontWeight: 600, fontSize: '.875rem' }}>
+                          {o.user?.name || o.guestName || 'Guest'}
+                          {!o.user && <span style={{ fontWeight: 400, color: '#9ca3af' }}> (guest)</span>}
+                        </div>
+                        <div style={{ fontSize: '.75rem', color: '#9ca3af' }}>{o.user?.email || o.guestEmail}</div>
                       </td>
                       <td style={{ whiteSpace: 'nowrap', color: '#6b7280', fontSize: '.8125rem' }}>
                         {new Date(o.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

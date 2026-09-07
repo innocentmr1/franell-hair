@@ -2,6 +2,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const Saloon = require('../models/Saloon');
+const AbandonedCart = require('../models/AbandonedCart');
 const sendEmail = require('../utils/sendEmail');
 const { orderConfirmationEmail, orderStatusEmail, reviewReminderEmail, adminNewOrderEmail } = require('../utils/emailTemplates');
 const { computeOrderPricing } = require('../utils/pricing');
@@ -10,7 +11,14 @@ const logAdminAction = require('../utils/auditLog');
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'info@franellhair.com';
 
 const createOrder = async (req, res) => {
-  const { orderItems, shippingAddress, shippingMethod, paymentMethod, promoCode } = req.body;
+  const { orderItems, shippingAddress, shippingMethod, paymentMethod, promoCode, email, fullName } = req.body;
+
+  // Guest checkout: no logged-in user, so a name/email must be supplied
+  // directly (they're used for the confirmation email and admin notice).
+  if (!req.user) {
+    if (typeof email !== 'string' || !email.trim() || typeof fullName !== 'string' || !fullName.trim())
+      return res.status(400).json({ message: 'Name and email are required' });
+  }
 
   let pricing;
   try {
@@ -21,7 +29,9 @@ const createOrder = async (req, res) => {
   const { orderItems: verifiedItems, itemsPrice, shippingPrice, discount, totalPrice } = pricing;
 
   const order = await Order.create({
-    user: req.user._id,
+    user: req.user?._id || null,
+    guestName: req.user ? '' : fullName.trim(),
+    guestEmail: req.user ? '' : email.trim().toLowerCase(),
     orderItems: verifiedItems,
     shippingAddress,
     paymentMethod,
@@ -38,11 +48,17 @@ const createOrder = async (req, res) => {
     });
   }
 
-  const { subject, html } = orderConfirmationEmail({ ...order.toObject(), user: req.user });
-  sendEmail({ to: req.user.email, subject, html });
+  const customerEmail = req.user?.email || order.guestEmail;
+  const customerForEmail = req.user || { name: order.guestName, email: order.guestEmail };
 
-  const { subject: adminSubject, html: adminHtml } = adminNewOrderEmail({ ...order.toObject(), user: req.user });
+  const { subject, html } = orderConfirmationEmail({ ...order.toObject(), user: customerForEmail });
+  sendEmail({ to: customerEmail, subject, html });
+
+  const { subject: adminSubject, html: adminHtml } = adminNewOrderEmail({ ...order.toObject(), user: customerForEmail });
   sendEmail({ to: ADMIN_EMAIL, subject: adminSubject, html: adminHtml });
+
+  // They completed checkout — don't send them an "abandoned cart" reminder later.
+  AbandonedCart.deleteMany({ email: customerEmail.toLowerCase() }).catch(() => {});
 
   res.status(201).json(order);
 };
@@ -55,16 +71,23 @@ const getMyOrders = async (req, res) => {
 const getOrderById = async (req, res) => {
   const order = await Order.findById(req.params.id).populate('user', 'name email');
   if (!order) return res.status(404).json({ message: 'Order not found' });
-  if (order.user._id.toString() !== req.user._id.toString() && !req.user.isAdmin)
-    return res.status(403).json({ message: 'Not authorized' });
+  // Guest orders (order.user is null) have no account to check ownership
+  // against — they're reachable by the (unguessable) order id alone, same
+  // as the guest's own order-confirmation link right after checkout.
+  if (order.user) {
+    const isOwner = req.user && order.user._id.toString() === req.user._id.toString();
+    if (!isOwner && !req.user?.isAdmin) return res.status(403).json({ message: 'Not authorized' });
+  }
   res.json(order);
 };
 
 const payOrder = async (req, res) => {
   const order = await Order.findById(req.params.id);
   if (!order) return res.status(404).json({ message: 'Order not found' });
-  if (order.user.toString() !== req.user._id.toString() && !req.user.isAdmin)
-    return res.status(403).json({ message: 'Not authorized' });
+  if (order.user) {
+    const isOwner = req.user && order.user.toString() === req.user._id.toString();
+    if (!isOwner && !req.user?.isAdmin) return res.status(403).json({ message: 'Not authorized' });
+  }
   if (order.isPaid) return res.json(order); // idempotent
 
   const { paymentIntentId } = req.body;
@@ -95,7 +118,7 @@ const payOrder = async (req, res) => {
   order.paymentResult = {
     id: paymentIntent.id,
     status: paymentIntent.status,
-    email: req.user.email,
+    email: req.user?.email || order.guestEmail,
   };
   await order.save();
   res.json(order);

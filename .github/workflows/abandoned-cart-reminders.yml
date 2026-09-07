@@ -1,0 +1,17 @@
+name: Send abandoned cart reminder emails
+
+on:
+  schedule:
+    # Every 30 minutes. Carts idle for 2+ hours get one reminder email; this
+    # ping also wakes Render's free-tier backend up if it's gone to sleep.
+    - cron: '*/30 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call abandoned-cart reminders endpoint
+        run: |
+          curl -sf -X POST https://franell-hair.onrender.com/api/abandoned-carts/send-reminders \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}"

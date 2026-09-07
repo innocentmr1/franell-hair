@@ -336,6 +336,38 @@ const adminNewContactMessageEmail = (msg) => {
   return { subject: `New Contact Message: ${msg.subject}`, html: wrapper('New Contact Message', body) };
 };
 
+const abandonedCartEmail = (cart) => {
+  const rows = cart.items
+    .map(
+      (item) => `
+        <tr>
+          <td style="padding:10px 0;border-bottom:1px solid #eee;">
+            <div style="font-weight:600;color:#111;">${escapeHtml(item.name)}</div>
+            <div style="font-size:13px;color:#777;">Qty: ${item.qty}</div>
+          </td>
+          <td style="padding:10px 0;border-bottom:1px solid #eee;text-align:right;color:#111;">
+            $${(item.price * item.qty).toFixed(2)}
+          </td>
+        </tr>`
+    )
+    .join('');
+
+  const body = `
+    <p>Hi ${escapeHtml(cart.name) || 'there'},</p>
+    <p>You left some beautiful hair behind. Your cart is still saved and ready whenever you are.</p>
+    <table style="width:100%;border-collapse:collapse;margin:16px 0;">${rows}</table>
+    <table style="width:100%;font-size:14px;">
+      <tr style="font-weight:700;"><td>Subtotal (CAD)</td><td style="text-align:right;">$${cart.subtotal.toFixed(2)}</td></tr>
+    </table>
+    <p style="margin-top:20px;">
+      <a href="https://www.franellhair.com/cart" style="background:${GOLD};color:#111;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600;">Complete Your Order</a>
+    </p>
+    ${supportFooter}
+  `;
+
+  return { subject: 'You left something in your cart', html: wrapper('Still Thinking It Over?', body) };
+};
+
 module.exports = {
   orderConfirmationEmail,
   orderStatusEmail,
@@ -344,6 +376,7 @@ module.exports = {
   mfaOtpEmail,
   reviewReminderEmail,
   otpEmail,
+  abandonedCartEmail,
   adminNewOrderEmail,
   adminNewCustomerEmail,
   adminNewContactMessageEmail,

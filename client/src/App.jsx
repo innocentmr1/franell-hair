@@ -26,6 +26,7 @@ import AdminTraffic     from './pages/admin/AdminTraffic';
 import AdminProducts    from './pages/admin/AdminProducts';
 import AdminProductForm from './pages/admin/AdminProductForm';
 import AdminOrders      from './pages/admin/AdminOrders';
+import AdminReviews     from './pages/admin/AdminReviews';
 import AdminUsers       from './pages/admin/AdminUsers';
 import AdminCategories  from './pages/admin/AdminCategories';
 import AdminSettings    from './pages/admin/AdminSettings';
@@ -43,6 +44,7 @@ import TopLoader    from './components/ui/TopLoader';
 import WhatsAppButton from './components/ui/WhatsAppButton';
 import ScrollToTop from './components/ui/ScrollToTop';
 import VisitTracker from './components/ui/VisitTracker';
+import IdleLogout from './components/ui/IdleLogout';
 
 function Layout({ children }) {
   return (
@@ -63,6 +65,7 @@ export default function App() {
           <WishlistProvider>
           <ScrollToTop />
           <VisitTracker />
+          <IdleLogout />
           <TopLoader />
           <WhatsAppButton />
           <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
@@ -95,6 +98,7 @@ export default function App() {
             <Route path="/admin/products/new" element={<AdminRoute><AdminProductForm /></AdminRoute>} />
             <Route path="/admin/products/:id/edit" element={<AdminRoute><AdminProductForm /></AdminRoute>} />
             <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
+            <Route path="/admin/reviews" element={<AdminRoute><AdminReviews /></AdminRoute>} />
             <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
             <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
             <Route path="/admin/settings"      element={<AdminRoute><AdminSettings /></AdminRoute>} />

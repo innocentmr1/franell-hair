@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Settings, LogOut, ExternalLink, Ticket, Scissors, MessageSquare, FileText, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Users, Tag, Settings, LogOut, ExternalLink, Ticket, Scissors, MessageSquare, FileText, BarChart3, Star } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const NAV = [
@@ -7,6 +7,7 @@ const NAV = [
   { to: '/admin/traffic',      label: 'Traffic',     icon: BarChart3 },
   { to: '/admin/products',     label: 'Products',    icon: Package },
   { to: '/admin/orders',       label: 'Orders',      icon: ShoppingBag },
+  { to: '/admin/reviews',      label: 'Reviews',     icon: Star },
   { to: '/admin/categories',   label: 'Categories',  icon: Tag },
   { to: '/admin/promo-codes',  label: 'Promo Codes', icon: Ticket },
   { to: '/admin/saloons',      label: 'Salons',      icon: Scissors },

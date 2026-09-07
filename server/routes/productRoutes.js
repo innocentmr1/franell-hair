@@ -5,7 +5,8 @@ const fs      = require('fs');
 const router = express.Router();
 const {
   getProducts, getFeaturedProducts, getProduct,
-  createProduct, updateProduct, deleteProduct, addReview, getTopReviews, getBestseller, getSiteStats, getRelatedProducts,
+  createProduct, updateProduct, deleteProduct, addReview, adminAddReview, adminDeleteReview,
+  getTopReviews, getBestseller, getSiteStats, getRelatedProducts,
 } = require('../controllers/productController');
 const { protect, admin } = require('../middleware/authMiddleware');
 const verifyFileType = require('../utils/verifyFileType');
@@ -40,5 +41,7 @@ router.route('/:id')
   .delete(protect, admin, deleteProduct);
 router.get('/:id/related', getRelatedProducts);
 router.post('/:id/reviews', protect, addReview);
+router.post('/:id/reviews/admin', protect, admin, adminAddReview);
+router.delete('/:id/reviews/:reviewId', protect, admin, adminDeleteReview);
 
 module.exports = router;

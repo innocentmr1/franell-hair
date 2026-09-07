@@ -10,6 +10,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// If a previously-logged-in session's token is rejected (expired or invalid),
+// clear it and send them to log in again — otherwise the UI would keep
+// showing them as signed in while every request silently fails.
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401 && localStorage.getItem('franellUser')) {
+      localStorage.removeItem('franellUser');
+      window.location.href = '/login';
+    }
+    return Promise.reject(err);
+  }
+);
+
 // Auth
 export const register = (data) => api.post('/auth/register', data);
 export const login = (data) => api.post('/auth/login', data);
@@ -28,6 +42,8 @@ export const getTopReviews = () => api.get('/products/top-reviews');
 export const getBestseller = () => api.get('/products/bestseller');
 export const getProduct = (id) => api.get(`/products/${id}`);
 export const addReview = (id, data) => api.post(`/products/${id}/reviews`, data);
+export const adminAddReview = (id, data) => api.post(`/products/${id}/reviews/admin`, data);
+export const adminDeleteReview = (id, reviewId) => api.delete(`/products/${id}/reviews/${reviewId}`);
 export const getRelatedProducts = (id) => api.get(`/products/${id}/related`);
 
 // Orders
@@ -110,5 +126,8 @@ export const adminDeleteContactMsg = (id)            => api.delete(`/contact/${i
 // Visits / Traffic
 export const recordVisit           = (data)          => api.post('/visits', data);
 export const getVisitStats         = ()              => api.get('/visits/stats');
+
+// Abandoned carts
+export const recordAbandonedCart   = (data)          => api.post('/abandoned-carts', data);
 
 export default api;

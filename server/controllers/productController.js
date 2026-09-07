@@ -94,6 +94,53 @@ const addReview = async (req, res) => {
   }
 };
 
+// Admin-only: add a review with no customer account or purchase behind it
+// (e.g. seed content for a new product). isAdminAdded flags it in the UI.
+const adminAddReview = async (req, res) => {
+  const { name, rating, comment, createdAt } = req.body;
+  if (typeof name !== 'string' || !name.trim())
+    return res.status(400).json({ message: 'Name is required' });
+  const numRating = Number(rating);
+  if (!Number.isInteger(numRating) || numRating < 1 || numRating > 5)
+    return res.status(400).json({ message: 'Rating must be a whole number from 1 to 5' });
+  if (typeof comment !== 'string' || !comment.trim())
+    return res.status(400).json({ message: 'Comment is required' });
+
+  const product = await Product.findById(req.params.id);
+  if (!product) return res.status(404).json({ message: 'Product not found' });
+
+  const review = { name: name.trim(), rating: numRating, comment: comment.trim(), isAdminAdded: true };
+  product.reviews.push(review);
+  if (createdAt) {
+    const d = new Date(createdAt);
+    if (!isNaN(d)) product.reviews[product.reviews.length - 1].createdAt = d;
+  }
+  product.numReviews = product.reviews.length;
+  product.rating = product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length;
+  await product.save();
+
+  logAdminAction(req, 'product.reviewAdded', product.name, { productId: product._id, rating: numRating });
+  res.status(201).json(product.reviews[product.reviews.length - 1]);
+};
+
+const adminDeleteReview = async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  if (!product) return res.status(404).json({ message: 'Product not found' });
+
+  const review = product.reviews.id(req.params.reviewId);
+  if (!review) return res.status(404).json({ message: 'Review not found' });
+  review.deleteOne();
+
+  product.numReviews = product.reviews.length;
+  product.rating = product.reviews.length
+    ? product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length
+    : 0;
+  await product.save();
+
+  logAdminAction(req, 'product.reviewDeleted', product.name, { productId: product._id });
+  res.json({ message: 'Review deleted' });
+};
+
 const getBestseller = async (req, res) => {
   try {
     const product = await Product.findOne({ sold: { $gt: 0 } }).sort({ sold: -1 });
@@ -162,4 +209,4 @@ const getRelatedProducts = async (req, res) => {
   }
 };
 
-module.exports = { getProducts, getFeaturedProducts, getProduct, createProduct, updateProduct, deleteProduct, addReview, getTopReviews, getBestseller, getSiteStats, getRelatedProducts };
+module.exports = { getProducts, getFeaturedProducts, getProduct, createProduct, updateProduct, deleteProduct, addReview, adminAddReview, adminDeleteReview, getTopReviews, getBestseller, getSiteStats, getRelatedProducts };

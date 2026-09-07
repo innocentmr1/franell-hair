@@ -12,7 +12,10 @@ const orderItemSchema = new mongoose.Schema({
 
 const orderSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    // Absent for guest checkout — guestName/guestEmail are used instead.
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    guestName: { type: String, default: '' },
+    guestEmail: { type: String, default: '' },
     orderItems: [orderItemSchema],
     shippingAddress: {
       street: String,

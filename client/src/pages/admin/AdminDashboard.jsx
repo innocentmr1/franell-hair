@@ -88,7 +88,7 @@ export default function AdminDashboard() {
                       #{o._id.slice(-8).toUpperCase()}
                     </Link>
                   </td>
-                  <td>{o.user?.name || '—'}</td>
+                  <td>{o.user?.name || o.guestName || '—'}</td>
                   <td>{new Date(o.createdAt).toLocaleDateString()}</td>
                   <td style={{ fontWeight: 600 }}>${(o.totalPrice || o.total || 0).toFixed(2)}</td>
                   <td>

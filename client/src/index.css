@@ -761,6 +761,20 @@ input, textarea, select { font-family: inherit; }
 .product-add-btn:hover:not(:disabled) { background: var(--gold); color: var(--black); }
 .product-add-btn:disabled { opacity: .5; cursor: not-allowed; }
 
+.product-trust-row {
+  display: flex; flex-wrap: wrap; gap: .5rem 1rem;
+  margin-top: -1rem; margin-bottom: 1rem;
+}
+.product-trust-item {
+  display: flex; align-items: center; gap: .375rem;
+  font-size: .75rem; color: var(--text-secondary); font-weight: 500;
+}
+.product-trust-item svg { color: var(--gold); flex-shrink: 0; }
+.product-trust-social-proof {
+  display: flex; align-items: center; gap: .375rem;
+  font-size: .8125rem; color: var(--text-secondary); margin-bottom: 1.5rem;
+}
+
 .product-desc-section { border-top: 1px solid #f3f4f6; padding-top: 1.5rem; }
 .product-desc-title { font-size: .9375rem; font-weight: 600; color: #111827; margin-bottom: .75rem; }
 .product-desc-text { font-size: .875rem; color: #6b7280; line-height: 1.7; }

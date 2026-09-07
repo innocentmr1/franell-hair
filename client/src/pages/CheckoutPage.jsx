@@ -5,7 +5,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { CreditCard, Building2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { createOrder, validatePromo, createPaymentIntent, payOrder } from '../services/api';
+import { createOrder, validatePromo, createPaymentIntent, payOrder, recordAbandonedCart } from '../services/api';
 import toast from 'react-hot-toast';
 
 const STRIPE_PK = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
@@ -144,6 +144,14 @@ export default function CheckoutPage() {
 
   const handleContinueToPayment = async (e) => {
     e.preventDefault();
+
+    recordAbandonedCart({
+      email: shippingInfo.email,
+      name: shippingInfo.fullName,
+      items: cartItems.map((i) => ({ product: i.product, name: i.name, image: i.image, price: i.price, qty: i.qty })),
+      subtotal,
+    }).catch(() => {});
+
     if (payMethod === 'card') {
       setLoading(true);
       try {
@@ -176,6 +184,9 @@ export default function CheckoutPage() {
     shippingMethod,
     paymentMethod: payMethod === 'card' ? 'Card' : 'Interac e-Transfer',
     promoCode: promoApplied?.code,
+    // Only used server-side for guest checkout — ignored when logged in.
+    email: shippingInfo.email,
+    fullName: shippingInfo.fullName,
   });
 
   const handleInteracOrder = async () => {
@@ -188,14 +199,6 @@ export default function CheckoutPage() {
       toast.error(err.response?.data?.message || 'Failed to place order. Please try again.');
     } finally { setLoading(false); }
   };
-
-  if (!user) return (
-    <div className="checkout-noauth">
-      <h2>Sign in to checkout</h2>
-      <p>You need to be signed in to complete your purchase.</p>
-      <Link to="/login" state={{ from: '/checkout' }} className="checkout-signin-btn">Sign In</Link>
-    </div>
-  );
 
   if (!cartItems.length) return (
     <div className="checkout-noauth">
@@ -225,6 +228,12 @@ export default function CheckoutPage() {
           {step === 0 && (
             <form className="checkout-form" onSubmit={handleContinueToPayment}>
               <h2 className="checkout-form-title">Shipping Information</h2>
+              {!user && (
+                <p style={{ fontSize: '.8125rem', color: 'var(--text-secondary)', marginTop: '-.5rem', marginBottom: '1rem' }}>
+                  Checking out as a guest. Have an account?{' '}
+                  <Link to="/login" state={{ from: '/checkout' }} style={{ color: 'var(--gold)', fontWeight: 600 }}>Sign in</Link> for faster checkout.
+                </p>
+              )}
               <div className="checkout-grid-2">
                 <div>
                   <label>Full Name</label>
