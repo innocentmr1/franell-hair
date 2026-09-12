@@ -1,10 +1,11 @@
 name: Send abandoned cart reminder emails
 
 on:
-  schedule:
-    # Every 30 minutes. Carts idle for 2+ hours get one reminder email; this
-    # ping also wakes Render's free-tier backend up if it's gone to sleep.
-    - cron: '*/30 * * * *'
+  # Schedule paused until CRON_SECRET is confirmed to match between Render
+  # and GitHub Actions secrets — it was failing every run and spamming
+  # failure emails. Re-enable the schedule block below once fixed.
+  # schedule:
+  #   - cron: '*/30 * * * *'
   workflow_dispatch: {}
 
 jobs:
